@@ -1,8 +1,6 @@
 # Statistics with R Specialization
 
-Duke University's Statistics with R Specialization on Coursera
-
-This repo contains lectures and assignments of [Duke Unitersity - Coursera](https://www.coursera.org/duke).
+This repo contains lectures and assignments of [Duke University's Statistics with R Specialization on Coursera](https://www.coursera.org/specializations/statistics).
 
 <br/>
 <p align="center">
