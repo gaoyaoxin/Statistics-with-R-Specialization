@@ -9,6 +9,6 @@ This repo contains lectures and assignments of [Duke University's Statistics wit
 
 ## Course Overview
 
-| Course | Description |
-|--------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Course                                             | Description                          |
+| -------------------------------------------------- | ------------------------------------ |
 | [Course 1](1-Introduction_to_Probability_and_Data) | Introduction to Probability and Data |

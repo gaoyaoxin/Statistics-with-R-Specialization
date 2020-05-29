@@ -2,12 +2,12 @@
 
 ### Lectures Overview
 
-| Week | Description |
-|--------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [week 1](#week-1) | Designing Studies |
+| Week              | Description                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| [week 1](#week-1) | Designing Studies                                                                   |
 | [week 2](#week-2) | Exploring Numerical Data & Exploring Categorical Data and Introduction to Inference |
-| [week 3](#week-3) | Introduction to Probability |
-| [week 4](#week-4) | Probability Distributions |
+| [week 3](#week-3) | Introduction to Probability                                                         |
+| [week 4](#week-4) | Probability Distributions                                                           |
 
 ## Week 1
 
