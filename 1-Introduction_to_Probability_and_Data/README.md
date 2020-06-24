@@ -11,24 +11,24 @@
 
 ## Week 1
 
-- [Lecture](/lecture/week1)
+- [Lecture & Notes](/lecture/week1)
 - [Assignment](/assignment/week1)
 - [Assignment (Rpubs)](https://rpubs.com/jacobjohn2016/608787)
-- [Notes](/lecture/week1/Designing%20Studies.ipynb)
 
 ## Week 2
 
-- [Lecture](/lecture/week2)
+- [Lecture & Notes](/lecture/week2)
 - [Assignment](/assignment/week2)
+- [Assignment (Rpubs)](https://rpubs.com/jacobjohn2016/631992)
 
 ## Week 3
 
-- [Lecture](/lecture/week3)
+- [Lecture & Notes](/lecture/week3)
 - [Assignment](/assignment/week3)
 
 ## Week 4
 
-- [Lecture](/lecture/week4)
+- [Lecture & Notes](/lecture/week4)
 - [Assignment](/assignment/week4)
 
 ## Week 5
