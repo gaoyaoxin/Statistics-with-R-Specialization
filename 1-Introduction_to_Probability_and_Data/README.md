@@ -14,6 +14,7 @@
 - [Lecture](/lecture/week1)
 - [Assignment](/assignment/week1)
 - [Assignment (Rpubs)](https://rpubs.com/jacobjohn2016/608787)
+- [Notes](/lecture/week1/Designing%20Studies.ipynb)
 
 ## Week 2
 
@@ -33,3 +34,7 @@
 ## Week 5
 
 - [Assignment](/assignment/week5)
+
+## Credits
+
+- [tuanavu](https://github.com/tuanavu/coursera-duke)
