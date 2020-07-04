@@ -25,7 +25,8 @@
 
 - [Lecture & Notes](/lecture/week3)
 - [Assignment](/assignment/week3)
-
+- [Assignment (Rpubs)](https://rpubs.com/jacobjohn2016/635359)
+  
 ## Week 4
 
 - [Lecture & Notes](/lecture/week4)
