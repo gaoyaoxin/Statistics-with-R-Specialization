@@ -30,11 +30,10 @@
 ## Week 4
 
 - [Lecture & Notes](/lecture/week4)
-- [Assignment](/assignment/week4)
 
 ## Week 5
 
-- [Assignment](/assignment/week5)
+- [Final Project](/assignment/week5)
 
 ## Credits
 
