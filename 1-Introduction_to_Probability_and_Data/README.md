@@ -8,6 +8,7 @@
 | [week 2](#week-2) | Exploring Numerical Data & Exploring Categorical Data and Introduction to Inference |
 | [week 3](#week-3) | Introduction to Probability                                                         |
 | [week 4](#week-4) | Probability Distributions                                                           |
+| [week 4](#week-5) | Final Project                                                                       |
 
 ## Week 1
 
@@ -34,6 +35,7 @@
 ## Week 5
 
 - [Final Project](/assignment/week5)
+- [Final Project (Rpubs)](https://rpubs.com/jacobjohn2016/635360)
 
 ## Credits
 
