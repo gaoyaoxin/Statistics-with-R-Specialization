@@ -14,7 +14,7 @@
 
 - [Lecture & Notes](/lecture/week1)
 - [Assignment](/assignment/week1)
-- [Assignment (Rpubs)]()
+- [Assignment (Shinyapps.io)](https://jacobjohn2016.shinyapps.io/sampling_distributions_Coursera/)
 
 ## Week 2
 
