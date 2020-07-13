@@ -139,9 +139,9 @@ and *upper*. There are a few conditions that must be met for this interval to be
 
 2.  For the confidence interval to be valid, the sample mean must be normally distributed and have standard error $s / \sqrt{n}$. Which of the following is not a condition needed for this to be true?
 <ol>
-<li> __The sample is random.__ </li>
+<li> The sample is random. </li>
 <li> The sample size, 60, is less than 10% of all houses. </li>
-<li> The sample distribution must be nearly normal. </li>
+<li> __The sample distribution must be nearly normal.__ </li>
 </ol>
 
 
