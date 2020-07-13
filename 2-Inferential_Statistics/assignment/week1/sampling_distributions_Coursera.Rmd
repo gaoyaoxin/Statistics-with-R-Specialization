@@ -273,6 +273,7 @@ sample size has on our sampling distribution.
 **Exercise**: Use the app below to create sampling distributions of means of `area`s from samples of size 10, 50, and 100. Use 5,000 simulations. What does each observation in the sampling distribution represent? How does the mean, standard error, and shape of the sampling distribution change as the sample size increases? How (if at all) do these values change if you increase the number of simulations?
 
 __Answer:__ Each observation of a sampling distribution is the mean of a area of a sample distribution. A sampling distribution displays the means of sample distributions of size `n`. As the sample size increases:
+
 * the mean moves closer to the true population mean
 * the standard error decreases
 * the sampling distribution tends to normalcy
