@@ -62,7 +62,7 @@ variable         | description
 <li> The hospitals where the births took place </li> 
 <li> The fathers of the children </li> 
 <li> The days of the births </li>
-<li> The births </li>
+<li> __The births__ </li>
 </ol>
 
 As a first step in the analysis, we should take a look at the variables in the dataset. 
@@ -92,7 +92,7 @@ summary(nc$gained)
 <ol>
 <li> 0 </li>
 <li> 13 </li>
-<li> 27 </li>
+<li> __27__ </li>
 <li> 31 </li>
 </ol>
 
@@ -106,13 +106,27 @@ false about the relationship between habit and weight?
 <ol>
 <li> Median birth weight of babies born to non-smoker mothers is slightly higher than that of babies born to smoker mothers. </li>
 <li> Range of birth weights of babies born to non-smoker mothers is greater than that of babies born to smoker mothers. </li>
-<li> Both distributions are extremely right skewed. </li>
+<li> __Both distributions are extremely right skewed.__ </li>
 <li> The IQRs of the distributions are roughly equal. </li>
 </ol>
 ```{r habit-weight-box}
 # type your code for the Question 3 here, and Knit
-
+ggplot(na.omit(nc), aes(x=habit, y=weight)) +
+  geom_boxplot() +
+  ggtitle("Distribution of baby weights accross smoking habits") + 
+  ylab("Smoking habit") + 
+  xlab("Baby weight")
 ```
+```{r}
+# We can compare the two groups using the by() function together with the summary() function.
+by(nc$weight, nc$habit, summary)
+```
+```{r}
+# Similarly, we can use the IQR()
+by(nc$weight, nc$habit, IQR)
+```
+
+The IQRs for the two distributions seem very similar. The range of birth weights of babies born to non-smoker mothers is greater than that of babies born to smoker mothers.
 
 The box plots show how the medians of the two distributions compare, but we can
 also compare the means of the distributions using the following to 
@@ -120,7 +134,7 @@ first group the data by the `habit` variable, and then calculate the mean
 `weight` in these groups using the `mean` function.
 
 ```{r by-means}
-nc %>%
+na.omit(nc) %>%
   group_by(habit) %>%
   summarise(mean_weight = mean(weight))
 ```
@@ -131,16 +145,33 @@ test.
 
 ## Inference
 
-
 <div id="exercise">
 **Exercise**: Are all conditions necessary for inference satisfied? Comment on each. You can compute the group sizes using the same `by` command above but replacing `mean(weight)` with `n()`.
 </div>
+
+```{r}
+by(nc$weight, nc$habit, mean)
+```
+
+```{r}
+na.omit(nc) %>%
+  group_by(habit) %>%
+  summarise(n = n())
+```
+
+The two means compared are not dependent. This is because for each observation in the smoker group, there isn't a single specially-corresponding observation in the non-smoker group; and vice-versa. The conditions for inference for comparing two independent means:
+
+* **Independence:** 
+  - Within groups: since we're sampling without replacement, each group needs to be less than 10% of the given population. This seems to be the case with both the nonsmoker and smoker groups.
+  - Between groups: as mentioned above, there is no reason to believe that the smoker and nonsmoker groups are dependent in any way.
+* **Sample size/skew**
+  - The nonsmoker group is heavily left skewed but the large sample size of n = 716, mitgates this. The smoker group appears to be nearly normal and symmetric.
 
 4.  What are the hypotheses for testing if the average weights of babies born to 
 smoking and non-smoking mothers are different?
 <ol>
 <li> $H_0: \mu_{smoking} = \mu_{non-smoking}$; $H_A: \mu_{smoking} > \mu_{non-smoking}$ </li>
-<li> $H_0: \mu_{smoking} = \mu_{non-smoking}$; $H_A: \mu_{smoking} \ne \mu_{non-smoking}$ </li>
+<li> **Ans**: $H_0: \mu_{smoking} = \mu_{non-smoking}$; $H_A: \mu_{smoking} \ne \mu_{non-smoking}$</li>
 <li> $H_0: \bar{x}_{smoking} = \bar{x}_{non-smoking}$; $H_A: \bar{x}_{smoking} > \bar{x}_{non-smoking}$ </li>
 <li> $H_0: \bar{x}_{smoking} = \bar{x}_{non-smoking}$; $H_A: \bar{x}_{smoking} > \bar{x}_{non-smoking}$ </li>
 <li> $H_0: \mu_{smoking} \ne \mu_{non-smoking}$;  $H_A: \mu_{smoking} = \mu_{non-smoking}$ </li>
@@ -172,6 +203,10 @@ Lastly, the `method` of inference can be `"theoretical"` or `"simulation"` based
 
 For more information on the inference function see the help file with `?inference`.
 
+```{r}
+?inference
+```
+
 <div id="exercise">
 **Exercise**: What is the conclusion of the hypothesis test?
 </div>
@@ -187,11 +222,12 @@ between 0 and 1. Also note that when doing a confidence interval arguments like
 <li> We are 95% confident that babies born to nonsmoker mothers are on average 0.05 to 0.58 pounds lighter at birth than babies born to smoker mothers. </li>
 <li> We are 95% confident that the difference in average weights of babies whose moms are smokers and nonsmokers is between 0.05 to 0.58 pounds. </li>
 <li> We are 95% confident that the difference in average weights of babies in this sample whose moms are smokers and nonsmokers is between 0.05 to 0.58 pounds. </li>
-<li> We are 95% confident that babies born to nonsmoker mothers are on average 0.05 to 0.58 pounds heavier at birth than babies born to smoker mothers. </li>
+<li> __We are 95% confident that babies born to nonsmoker mothers are on average 0.05 to 0.58 pounds heavier at birth than babies born to smoker mothers.__ </li>
 </ol>
 ```{r habit-weight-ci}
 # type your code for the Question 5 here, and Knit
-
+inference(y = weight, x = habit, data = nc, statistic = "mean", type = "ci", 
+          method = "theoretical", order = c("smoker","nonsmoker"))
 ```
 
 By default the function reports an interval for ($\mu_{nonsmoker} - \mu_{smoker}$)
@@ -211,11 +247,12 @@ interval?
 <li>(38.1526 , 38.5168)</li>
 <li>(38.0892 , 38.5661)</li>
 <li>(6.9779 , 7.2241)</li>
-<li>(38.0952 , 38.5742)</li>
+<li>**(38.0952 , 38.5742)**</li>
 </ol>
 ```{r weeks-ci-99}
 # type your code for Question 6 here, and Knit
-
+inference(y = weeks, data = nc, statistic = "mean", type = "ci", conf_level = 0.99,
+          method = "theoretical")
 ```
 
 <div id="exercise">
@@ -223,23 +260,30 @@ interval?
 </div>
 ```{r weeks-ci-90}
 # type your code for the Exercise here, and Knit
-
+inference(y = weeks, data = nc, statistic = "mean", type = "ci", conf_level = 0.90,
+          method = "theoretical")
 ```
+As the confidence level increases, the width of the confidence interval also increases. We expect this to happen with the same parameter.
 
 <div id="exercise">
 **Exercise**: Conduct a hypothesis test evaluating whether the average weight gained by younger mothers is different than the average weight gained by mature mothers.
 </div>
 ```{r gained-mature-ht}
 # type your code for the Exercise here, and Knit
-
+inference(y = gained, x = mature, data = nc, statistic = "mean", type = "ht", null=0,
+          method = "theoretical", alternative = "twosided")
 ```
 
 7. Now, a non-inference task: Determine the age cutoff for younger and mature 
 mothers. Use a method of your choice, and explain how your method works.
 ```{r cutoff-mature}
 # type your code for Question 7 here, and Knit
-
+na.omit(nc) %>%
+  group_by(mature) %>%
+  summarise(min = min(mage), max = max(mage))
 ```
+
+Using the maxmimum and minimum age for each group, the mature mom age ranges from 35-50 years while the younger mom age ranges from 15-34. 
 
 <div id="exercise">
 **Exercise**: Pick a pair of variables: one numerical (response) and one categorical 
@@ -253,11 +297,66 @@ and analyzing the data to answer this question is basically what you'll need to 
 your project as well.)
 </div>
 
-```{r pick-your-own}
-# type your code for the Exercise here, and Knit
+The two variables we will be exploring are:
 
+variable         | description
+---------------- | ---------------------------------------------
+`premie`         | whether the birth was classified as premature (premie) or full-term.
+`weight`         | weight of the baby at birth in pounds.
+
+We will try and explore whether a premature babies tend to have a lower weight on average than full-term babies and whether this difference is statistically significant. Our exploratory variable in this case would be `premie` while our response variable is `weight`
+
+### Conditions for inference for comparing two independent means.
+
+The two means compared are not dependent. This is because for each observation in the premature group, there isn't a single specially-corresponding observation in the full-term group; and vice-versa. The conditions for inference for comparing two independent means:
+
+
+```{r independence}
+# type your code for the Exercise here, and Knit
+na.omit(nc) %>%
+  group_by(premie) %>%
+  summarise(n = n())
 ```
 
+* **Independence:** 
+  - Within groups: since we're sampling without replacement, each group needs to be less than 10% of the given population. This seems to be the case with both the premature and full-term groups.
+  - Between groups: as mentioned above, there is no reason to believe that the premature and full-term groups are dependent in any way.
+  
+```{r}
+mdat <- na.omit(nc) %>%
+  group_by(premie) %>%
+  summarise(mean = mean(weight))
+mdat
+```
+  
+```{r skew}
+ggplot(na.omit(nc), aes(x=weight, fill=premie)) +
+  geom_density(alpha=.3) + 
+  geom_vline(data=mdat, aes(xintercept=mean,  colour=premie),
+               linetype="dashed", size=1)
+```
+  
+* **Sample size/skew**
+  - The full term group is heavily left skewed but the large sample size of n = 694, mitigates this. The premie group appears to be nearly normal and symmetric.
+  
+### Inference
+
+$H_0: \mu_{full} = \mu_{premie}$ The observed difference between the means of full and premie is due to chance and due to sampling variability.
+$H_A: \mu_{full} \ne \mu_{premie}$ The observed difference is statistically significant and cannot be attributed to sampling variability.
+
+We'll be using a signficance level of 0.05 and a null value of 0. The null value represents no difference in the means of the two groups.
+
+
+```{r}
+inference(y = weight, x = premie, data = nc, statistic = "mean", type = "ht", null=0,
+          method = "theoretical", alternative = "twosided")
+```
+
+```{r}
+t.test(weight ~ premie, data = nc, conf.level=0.95)
+```
+
+Since our p-value is well below 0.05, we can reject the null hypothesis and the observed difference between the two means is not due to chance. The difference is statistically significant and a premature birth can be attributed to a lower birth weight.
 
 <div id="license">
 This is a product of OpenIntro that is released under a [Creative Commons 
