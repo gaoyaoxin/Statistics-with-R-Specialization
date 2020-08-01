@@ -37,7 +37,7 @@ Take a moment to review the report then address the following questions.
 <li> A poll conducted by WIN-Gallup International surveyed 51,000 people from 57 countries. </li>
 <li> A poll conducted by WIN-Gallup International surveyed 52,000 people from 57 countries. </li>
 <li> A poll conducted by WIN-Gallup International surveyed 51,917 people from 57 countries. </li>
-<li> A poll conducted by WIN-Gallup International surveyed 51,927 people from 57 countries. </li>
+<li> **A poll conducted by WIN-Gallup International surveyed 51,927 people from 57 countries.** </li>
 </ol>
 
 2. Which of the following methods were used to gather information? 
@@ -45,20 +45,29 @@ Take a moment to review the report then address the following questions.
 <li> Face to face </li> 
 <li> Telephone </li>
 <li> Internet </li> 
-<li> All of the above </li>
+<li> **All of the above** </li>
 </ol>
+
+> "A total of 51,927 persons were interviewed globally. In each country a national probability sample of around 1000 men and women was interviewed either face to face (35 countries; n=33,890), via telephone (11 countries; n=7,661) or online (11 countries; n=10,376)"
 
 3. True / False: In the first paragraph, several key findings are reported. These percentages appear to be **sample statistics**. 
 <ol>
-<li> True </li> 
+<li> **True** </li> 
 <li> False </li>
 </ol>
+
+These percentages are sample statistics derived from all the interviews conducted accross the world. It is not practical to ask every single person in this world their religious stand.
 
 4. True / False:The title of the report is "Global Index of Religiosity and Atheism". To generalize the report's findings to the global human population, We must assume that the sample was a random sample from the entire population in order to be able to generalize the results to the global human population. This seems to be a reasonable assumption.
 <ol>
 <li> True </li> 
-<li> False </li>
+<li> **False** </li>
 </ol>
+
+This study is an observational study. Individuals are observed, interviewed and measures are recorded. Morever, this survey is entitled ‘Global Index of Religiosity and Atheism’ and is supposed to represent the entire adult human population on earth. This means that we need to make sure that no demographic segments of the entire adult population on earth are under-represented or over-represented. The data does seem to indicate that the respondents from various countries, who participated in the survey, were selected at random. However, there are certain interesting factors that lead me to believe that the findings of the report, don’t necessarily generalize the results to the global human population:
+
+- There are more than 150 countries in the world. WIN-Gallup surveyed only 57 of these countries, typically conducting around 1,000 internet, phone or personal interviews. These sample figures were then “scaled up” to reflect each country. Surveyed countries are extrapolated to non-surveyed nations to give global figures.
+- Regarding the 57 countries included, it also is not specified how the 57 countries were selected and how they are able to represent the global population. (For example, Indonesia, the country with the 4th largest population, and the largest Muslim population in the world, is not included in the 57 countries. Nor is Thailand, the country with the largest Buddhist proportion.)
 
 ### The data
 
@@ -70,7 +79,7 @@ data(atheism)
 
 5. What does each row of Table 6 correspond to? 
 <ol>
-<li> Countries </li> 
+<li> **Countries** </li> 
 <li> Individual Persons </li> 
 <li> Religions </li>
 </ol>
@@ -78,9 +87,13 @@ data(atheism)
 6. What does each row of `atheism` correspond to?
 <ol>
 <li> Countries </li> 
-<li> Individual Persons </li> 
+<li> **Individual Persons** </li> 
 <li> Religions </li>
 </ol>
+
+```{r}
+head(atheism)
+```
 
 To investigate the link between these two ways of organizing this data, take a look at the estimated proportion of atheists in the United States. Towards the bottom of Table 6, we see that this is 5%. We should be able to come to the same number using the `atheism` data.
 
@@ -89,17 +102,22 @@ Create a new dataframe called `us12` that contains only the rows in `atheism` as
 ```{r us-atheism}
 us12 <- atheism %>%
   filter(nationality == "United States" , atheism$year == "2012")
+head(us12)
 ```
 
 
 7. Next, calculate the proportion of atheist responses in the United States in 2012, i.e. in `us12`. True / False: This percentage agrees with the percentage in Table~6.
 <ol>
-<li> True </li> 
+<li> **True** </li> 
 <li> False </li>
 </ol>
 ```{r perc-atheist-us12}
 # type your code for Question 7 here, and Knit
-
+us12 %>%
+  filter(nationality == "United States") %>%
+  group_by(response) %>%
+  summarise(freq=n()) %>%
+  mutate(prop=freq/sum(freq)*100)
 ```
 
 
@@ -112,6 +130,14 @@ The inferential tools for estimating population proportion are analogous to thos
 <div id="exercise">
 **Exercise**: Write out the conditions for inference to construct a 95% confidence interval for the proportion of atheists in the United States in 2012. Are you confident all conditions are met?
 </div>
+
+### Conditions for inference for creating a CI for a observed proportion
+
+* **Independence:** Since this is an observational study, the data should contain less than 10% of the population. Since 1002 observations is far less than 10% of the population of the United States, the independence condition is satisfied.
+* **Sample size/skew:**
+  - There should be at least 10 successes and failures in the sample.
+  - Assuming, 'atheist' constitutes a success, we have 50 successes and 952 failures, which is greater than 10
+  - Hence success failure condition is met
 
 If the conditions for inference are reasonable, we can either calculate the standard error and construct the interval by hand, or allow the `inference` function to do it for us.
 
@@ -127,15 +153,18 @@ Although formal confidence intervals and hypothesis tests don't show up in the r
 **Exercise**: Imagine that, after reading a front page story about the latest public opinion poll, a family member asks you, "What is a margin of error?" In one sentence, and ignoring the mechanics behind the calculation, how would you respond in a way that conveys the general concept?
 </div>
 
+The margin of error is the range of values above and below the sample estimate in which our population parameter could lie. It also shows the uncertainty associated with our sample estimate.
+
 8. Based on the R output, what is the margin of error for the estimate of the proportion of the proportion of atheists in US in 2012? 
 <ol>
 <li> The margin of error for the estimate of the proportion of atheists in the US in 2012 is 0.05. </li> 
 <li> The margin of error for the estimate of the proportion of atheists in the US in 2012 is 0.025. </li> 
-<li> The margin of error for the estimate of the proportion of atheists in the US in 2012 is 0.0135. </li>
+<li> **The margin of error for the estimate of the proportion of atheists in the US in 2012 is 0.0135.** </li>
 </ol>
 ```{r me-perc-atheist-us12}
 # type your code for Question 8 here, and Knit
-
+ci95 <- inference(y = response, data = us12, statistic = "proportion", type = "ci", method = "theoretical", success = "atheist")
+ci95$ME
 ```
 
 <div id="exercise">
@@ -143,8 +172,43 @@ Although formal confidence intervals and hypothesis tests don't show up in the r
 </div>
 ```{r me-perc-atheist-other-countries}
 # type your code for the Exercise here, and Knit
+atheism %>%
+  filter(nationality == "India", atheism$year == "2012") %>%
+  group_by(response) %>%
+  summarise(freq=n()) %>%
+  mutate(prop=freq/sum(freq)*100)
 
+atheism %>%
+  filter(nationality == "France", atheism$year == "2012") %>%
+  group_by(response) %>%
+  summarise(freq=n()) %>%
+  mutate(prop=freq/sum(freq)*100)
 ```
+The two countries we're going to calculating confidence intervals for are India and France These are confidence intervals for the proportion of atheists in 2012.
+
+### Conditions for inference for creating a CI for a observed proportion
+
+* **Independence:** Since this is an observational study, the data should contain less than 10% of the population. Since 1092 and 1688 observations are far less than 10% of the population of India and France, respectively, the independence condition is satisfied.
+* **Sample size/skew:**
+  - There should be at least 10 successes and failures in the sample.
+  - Assuming, 'atheist' constitutes a success, we have 33 successes and 1059 failures for the sample for India and 485 successes and 1203 failures for the sample for France, which are all greater than 10
+  - Hence success failure condition is met
+
+```{r}
+in95 <- inference(y = response, data = atheism %>%
+  filter(nationality == "India", atheism$year == "2012"), statistic = "proportion", type = "ci", method = "theoretical", success = "atheist")
+in95$CI
+in95$ME
+```
+We are 95% confident that approximately 2% to 4% of people from India are atheists. The margin of error for this approximation is $\pm$1.02%.
+
+```{r}
+fr95 <- inference(y = response, data = atheism %>%
+  filter(nationality == "France", atheism$year == "2012"), statistic = "proportion", type = "ci", method = "theoretical", success = "atheist")
+fr95$CI
+fr95$ME
+```
+We are 95% confident that approximately 2.7% to 3% of people from France are atheists. The margin of error for this approximation is $\pm$2.16%.
 
 ## How does the proportion affect the margin of error?
 
@@ -168,7 +232,7 @@ ggplot(d, aes(x = p, y = me)) +
 <li> The $ME$ reaches a minimum at $p = 0$. </li> 
 <li> The $ME$ reaches a minimum at $p = 1$. </li> 
 <li> The $ME$ is maximized when $p = 0.5$. </li> 
-<li> The most conservative estimate when calculating a confidence interval occurs when $p$ is set to 1. </li>
+<li> **The most conservative estimate when calculating a confidence interval occurs when $p$ is set to 1.** </li>
 </ol>
 
 The question of atheism was asked by WIN-Gallup International in a similar survey that was conducted in 2005. We assume here that sample sizes have remained the same. Table 4 on page 13 of the report summarizes survey results from 2005 and 2012 for 39 countries.
@@ -178,21 +242,45 @@ Answer the following two questions using the `inference` function. As always, wr
 10. True / False: There is convincing evidence that Spain has seen a change in its atheism index between 2005 and 2012. <br><br> *Hint:* Create a new data set for respondents from Spain. Then use their responses as the first input on the `inference`, and use `year` as the grouping variable.
 <ol>
 <li> True </li> 
-<li> False </li>
+<li> **False** </li>
 </ol>
 ```{r spain-05-12}
 # type your code for Question 10 here, and Knit
+sp <- atheism %>%
+  filter(nationality == "Spain", atheism$year == c("2005", "2012"))
+sp %>%
+  group_by(year) %>%
+  summarise(freq=n())
+sp %>%
+  group_by(response) %>%
+  summarise(freq=n()) %>%
+  mutate(prop=freq/sum(freq))
+```
+### Conditions for inference for comparing two independent proportions
 
+* **Independence:** 
+  - within groups: Since this is an observational study, the data should contain less than 10% of the population. Since 573 and 473 observations are far less than 10% of the population for 2005 and 2012, respectively, the independence condition is satisfied for within groups.
+  - between groups: it's safe to assume that the two groups are not paired and are independent of each other. The observations are also 7 years apart, and influence by peers can be assumed negligible.
+* **Sample size/skew:**
+  - There should be at least 10 successes and failures in the sample.
+  - The $p_{pool}$ for this sample is 0.0942, assuming 'atheist' constitutes a success.
+  - For the year 2005, n_sucesses = 0.0942*573 = 54 and n_failures = 519, both are greater than 10.
+  - For the year 2012, n_sucesses = 0.0942*573 = 54 and n_failures = 519, both are greater than 10.
+  - Hence success failure condition is met
+
+```{r}
+inference(y = response, x = year, data = sp, statistic = "proportion", type = "ht", method = "theoretical", success = "atheist", null= 0, alternative = "twosided")
 ```
 
 11. True / False: There is convincing evidence that the United States has seen a change in its atheism index between 2005 and 2012.
 <ol>
-<li> True </li> 
+<li> **True** </li> 
 <li> False </li>
 </ol>
 ```{r us-05-12}
 # type your code for Question 11 here, and Knit
-
+inference(y = response, x = year, data = atheism %>%
+  filter(nationality == "United States", atheism$year == c("2005", "2012")), statistic = "proportion", type = "ht", method = "theoretical", success = "atheist", null= 0, alternative = "twosided")
 ```
 
 
@@ -200,25 +288,41 @@ Answer the following two questions using the `inference` function. As always, wr
 <ol>
 <li> 0 </li>
 <li> 1 </li> 
-<li> 1.95 </li> 
+<li> **1.95** </li> 
 <li> 5 </li>
 </ol>
+
+A type 1 error is rejecting the null hypothesis when H0 is actually true. We typically do not want to incorrectly reject H0 more than 5% of the time. This corresponds to a significance level of 0.05.
+
 ```{r type1}
 # type your code for Question 12 here, and Knit
-
+39*0.05
 ```
+Since there are 39 countries in Table 4 that summarizes survey results from 2005 to 2012 we will need to multiply 0.05 by 39 to estimate how many countries we would expect to detect a change in the atheism index simply by chance. the result is 1.95, or 2 countries.
 
 13. Suppose you're hired by the local government to estimate the proportion of residents that attend a religious service on a weekly basis. According to the guidelines, the estimate must have a margin of error no greater than 1% with 95% confidence. You have no idea what to expect for $p$. How many people would you have to sample to ensure that you are within the guidelines? <br><br> *Hint:* Refer to your plot of the relationship between $p$ and margin of error. Do not use the data set to answer this question.
 <ol>
 <li> 2401 people </li>
 <li> At least 2401 people </li>
 <li> 9604 people </li> 
-<li> At least 9604 people </li>
+<li> **At least 9604 people** </li>
 </ol>
+
+To find a sample size *n* so that the sample proportion is within 1% margin of error of the actual proportion at a 95% confidence interval:
+
+Using the formula for the margin of error: $0.01 \lt z^{*}\times \sqrt{p(1-p)/n}$
+
+Since at 95% confidence interval $z^{*} = 1.96$, we can find $n \lt (1.96^{2} \times p(1-p))/0.01^{2}$
+
 ```{r sample-size}
 # type your code for Question 13 here, and Knit
-
+((1.96**2) * (0.5 * 0.5))/(0.01 ** 2)
 ```
+
+## References
+
+* [Analytics with R: Contingency Tables](http://analyticswithr.com/contingencytables.html)
+* [Statistics How To: Margin of Error](https://www.statisticshowto.com/probability-and-statistics/hypothesis-testing/margin-of-error/)
 
 <div id="license">
 This is a product of OpenIntro that is released under a [Creative Commons 

@@ -32,7 +32,7 @@
 
 - [Lecture & Notes](/lecture/week4)
 - [Assignment](/assignment/week4)
-- [Assignment (Rpubs)]()
+- [Assignment (Rpubs)](https://rpubs.com/jacobjohn2016/645113)
 
 ## Week 5
 
