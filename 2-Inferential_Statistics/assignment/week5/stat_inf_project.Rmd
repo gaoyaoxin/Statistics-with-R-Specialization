@@ -24,10 +24,14 @@ load("gss.Rdata")
 ```
 
 
-
 * * *
 
 ## Part 1: Data
+
+The General Social Survey (GSS) by NORC at the University of Chicago claims to be a comprehensive, unbiased perspective on American opinion. 
+
+### Sampling design & Weighting
+
 
 
 * * *
