@@ -28,11 +28,37 @@ load("gss.Rdata")
 
 ## Part 1: Data
 
-The General Social Survey (GSS) by NORC at the University of Chicago claims to be a comprehensive, unbiased perspective on American opinion. 
+The General Social Survey (GSS) by NORC at the University of Chicago claims to be a comprehensive, unbiased perspective on American opinion on contemporary issues and trends ^[[About the GSS](http://gss.norc.org/About-The-GSS)]. The survey ensued in 1972 and continues till date, while trying to improve and ameliorate bias with each iteration. The GSS has employed a biennial, dual sample design since 1994, i.e., the GSS conducts the survey in even years with two samples.
 
-### Sampling design & Weighting
+### Study Design
 
+The GSS, since its inception, has been using a rotation scheme as a means to alleviate bias introduced due to question order. The intrinsic ordering of questions can have a primacy and recency effect which distort response behavior. ^[[Rotating Panel Design - Encyclopedia of Survey Research Methods](https://methods.sagepub.com/reference/encyclopedia-of-survey-research-methods/n500.xml)] statistical standpoint, rotation is advantageous when data needs to be aggregated. Rotation doesn't work when a correlation analysis needs to be conducted. The receny effect will be more apparent as participants will tend to associate recent options with the presented scale. ^[[Rotation - SoSci Survey](https://www.soscisurvey.de/help/doku.php/en:create:rotation)]
 
+The rotation scheme also allows the survey to include "Permanent items" and "Regular items" as each set of items only appeared two-thirds of time. A noted disadvantage of this approach was that it results in gaps (or NAs) in the data. However, the impact of such gaps can be reduced during aggregation. 
+
+The rotation, across-time design was discontinued in 1987 as it causes an imbalance in the time-series. According to GSS Appendix Q^[[GSS Codebook: Appendix Q](https://gss.norc.org/documents/codebook/GSS_Codebook_AppendixQ.pdf)]: a split-ballot design was introduced, which splits the rotations "across random ballots (or sub-samples) within each survey rather than across surveys (and years)". Figure 1 shows how split-ballot rotation took place, starting 1988.
+
+![Fig. 1: Split-ballot designed introduced in 1988. Splits are done accross ballots and not surveys/years. (Source: GSS Codebook Appendix Q)](img/ballot_design.jpg)
+
+### Sampling design
+
+According to Appendix A^[[GSS Codebook: Appendix A](https://gss.norc.org/documents/codebook/GSS_Codebook_AppendixA.pdf)], survey samples through 1972 to 1974 followed a modified probability sample which was then conducted alongside a full probability sample design for 1975 to 1977 surveys. The variable `sample` denotes this separation. The appendix A also states, "investigators who have applied statistical tests to previous General Social Survey data should continue to apply those tests". For the sake of simplicity and this project, we will assume a random sample for years 1972 through 1977. Finally, years 1977 and above used a full probability sample rather than this transition methodology, making it safe to assume a random sample.
+
+### Causality
+
+Since there is no random assignment, blocking or control involved, the study can only be deemed as observation (as opposed to an experiment). Since there is no guarantee that all confounding variables can be examined or measured in an observational study, no casual relationship can be established.
+
+### Generalizability
+
+The survey was only conducted in English till 2006, any statistics involving non-English speaking participants until 2006 should note this. Furthermore, the survey was conducted in Spanish in addition to English speakers, which is said to include "60-65%" of the language exclusions. 
+
+The sample is conducted as a multi-stage sample with further block quotas. Each block constitutes of a quota based on sex, age, and employment status. In order to reduce the bias introduced by "not-at-home" cases, interviewers are instructed to interview only after 1500 hrs on weekdays or during weekend and/or holidays. The timings are based on empirical evidence from previous surveys.
+
+The primary sampling units are Standard Metropolitan Statistical Areas and counties which are stratified by race, region and age. Within these primary sampling units, blocks were selected with probabilities proportional to size. Furthermore, interviewers have been advised to start from the northwest corner of the block and continue until the quota for the block has been met. 
+
+According to Appendix B ^[[G](https://gss.norc.org/documents/codebook/GSS_Codebook_AppendixB.pdf)], all interviews are trained by area supervisors in order to minimize bias. Appendix B also includes a holistic list of specifications to be followed by an interviewer. GSS also documents their survey programming and also includes instructions on handling anomalous cases. ^[[List of GSS questionnaires](http://gss.norc.org/Get-Documentation/questionnaires)]. Figure 2 shows an example for a response.
+
+![Fig. 2: Survey Programming for Address confirmation (Source: GSS Questionnaries)](img/question_sample.jpg)
 
 * * *
 
