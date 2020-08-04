@@ -15,6 +15,8 @@ output:
 library(ggplot2)
 library(dplyr)
 library(statsr)
+library(tidyr)
+library(knitr)
 ```
 
 ### Load data
@@ -86,6 +88,161 @@ It should be noted that this project aims to understand the impact of one religi
 * * *
 
 ## Part 3: Exploratory data analysis
+
+The two variables of this project will use to address the research question are:
+
+1. `conclerg`: confidence in organized religion
+2. `homosex`: Homosexual sex relations
+
+### `conclerg`
+
+This variable answers the following question in the interview:
+
+> "I am going to name some institutions in this country. As far as the people running these institutions are concerned, would you say you have a great deal of confidence, only some confidence, or hardly any confidence at all in them?"
+
+The respondents then selects one of the following options:
+
+| VALUE | LABEL        |
+|-------|--------------|
+| NA    | IAP          |
+| 1     | A GREAT DEAL |
+| 2     | ONLY SOME    |
+| 3     | HARDLY ANY   |
+| NA    | DK           |
+| NA    | NA           |
+
+These factors are labeled as 1, 2, and 3. The order or the value, in this case, doesn't impact the weightage of each option.
+
+### `homosex`
+
+This variable answers the following question in the interview:
+
+> "What about sexual relations between two adults of the same sex?"
+
+The respondents then selects one of the following options:
+
+| VALUE | LABEL            |
+|-------|------------------|
+| NA    | IAP              |
+| 1     | ALWAYS WRONG     |
+| 2     | ALMOST ALWAYS WRG |
+| 3     | SOMETIMES WRONG  |
+| 4     | NOT WRONG AT ALL |
+| 5     | OTHER            |
+| NA    | DK               |
+| NA    | NA               |
+
+Similarly to the previous variable, these factors are labeled as 1, 2, 3, 4 and 5. The order or the value, in this case, doesn't impact the weightage of each option.
+
+### NAs
+
+In order to address the research question, we're not going to consider respondents who answered Inapplicable (IAP), Don't Know (DK), nor Not Applicable (NA). According to the Release Notes Panel, "could include refusing the question, giving a garbled answer, or declining the remaining questions in a given module." In this case, ignoring or dropping such values is not going to impact our analysis. Furthermore, respondents who were marked as IAP were not eligible for the question. Lastly, we can also ignore the "OTHER" factor for `homosex` as it isn't clear what this factor refers to. These rows can also be dropped without affecting our analysis adversely.
+
+### Exploration
+
+```{r}
+# dropping rows for the data
+gss_clean <- gss %>%
+  filter(!is.na(homosex), !is.na(conclerg), homosex!="Other")
+
+# finding the max and min years
+summary(gss_clean$year)
+```
+
+We're going to start by taking a look at how the acceptance of homosexual sexual relations has changed over the years 1973 - 2012. For this we'll plot categories 1 - 4 as stacked bar charts. This helps us understand how the proportions of each response factor changes over the years.
+
+```{r}
+ggplot(data=gss_clean, aes(x = year, fill = homosex)) + 
+  geom_bar(position="fill", na.rm = TRUE) +
+  ylab("Proportions for acceptance of homosexual sexual relations") + 
+  xlab("Year")
+```
+
+There seems to be a general rise in the acceptance of homosexual sexual relations. The stacked bar plot above shows an increase in the proportions of "Not Wrong At All" and decrease in the proportions of "Always Wrong". A majority of the responses for `homosex` seem to be in the extremes as the proportions of responses for "Almst Always Wrg" and "Sometimes Wrong" look much smaller. We can confirm this using a line plot of the proportions:
+
+```{r}
+homosex_year_prop <- gss_clean %>%
+  group_by(homosex, year) %>%
+  summarize(freq = n()) %>%
+  group_by(year) %>%
+  mutate(prop=freq/sum(freq))
+
+ggplot(data=homosex_year_prop, aes(x=year, y=prop)) +
+  geom_line(aes(color=homosex, linetype=homosex)) +
+  ylab("Proportions for acceptance of homosexual sexual relations") + 
+  xlab("Year")
+```
+
+This general increasing trend in "Always Wrong" proportions and general decrease trend in "Almst Always Wrg" proportions can be confirmed using the plot above. These continue to increase and decrease until "Not Wrong At All" proportion is higher than that of "Always Wrong". Furthermore, the acceptance of homosexuality is in line with the research conducted by the Pew Research Center mentioned in [Part 2](## Part 2: Research question) of this project.
+
+Now, we'll take a look at how the acceptance of confidence in organized religion has changed over the years 1973 - 2012. For this, we'll plot all categories as stacked bar charts. This helps us understand how the proportions of each response category changes over the years.
+
+```{r}
+ggplot(data=gss_clean, aes(x = year, fill = conclerg)) + 
+  geom_bar(position="fill", na.rm = TRUE) +
+  ylab("Proportions for confidence in organization religion") + 
+  xlab("Year")
+```
+
+Although not apparent, there seems to be a general decrease in the proportion responding "A Great Deal" with a substantial drop in 2003 followed by another decline in this proportion. Furthermore, there seems to be a general increase in the proportions for "Hardly Any" except the late 1980s where the proportions peaked. The "Only some" response appears to be consistent across the years. We can confirm this using a line plot of the proportions:
+
+```{r}
+conclerg_year_prop <- gss_clean %>%
+  group_by(conclerg, year) %>%
+  summarize(freq = n()) %>%
+  group_by(year) %>%
+  mutate(prop=freq/sum(freq))
+
+ggplot(data=conclerg_year_prop, aes(x=year, y=prop)) +
+  geom_line(aes(color=conclerg, linetype=conclerg)) + 
+  ylab("Proportions for confidence in organization religion") + 
+  xlab("Year")
+```
+
+Based on the line plot above, there seems to be no apparent trend in the "Only some" response as proportions seem to increase and decrease regardless of the passage in time. Furthermore, the general increase in "Hardly Any" proportions and a general decrease in the "A Great Deal" proportions are evident. However, "A Great Deal" constituents to a more substantial proportion of the sample.
+
+We will now look at the year 2002 specifically, which is concerning our research question. 
+
+```{r}
+homosex_year_prop %>%
+  filter(year==2002) %>%
+  select(c(homosex, prop))
+```
+
+Based on the one-variable contingency table above, higher proportions of people in 2002 tend to be against homosexual sexual relationships.
+
+```{r}
+conclerg_year_prop %>%
+  filter(year==2002) %>%
+  select(c(conclerg, prop))
+```
+
+Based on the table above, the proportions of "Hardly Any" exceed those of "A Great Deal." Furthermore, according to the line chart illustrating the change in proportions of confidence in organized religion, the year 2002 is when there's a sudden change in these proportions. 2003 and 2004 seem to show proportions where "A Great Deal" exceeds those of "Hardly Any."
+
+Now to summarize the association, we will construct a two-way contingency table for the year 2002. The table below shows the distribution of responses by accepting homosexual sexual activity and confidence in organized religion:
+
+```{r}
+conclerg_homosex <- gss_clean %>%
+  filter(year==2002) %>%
+  group_by(conclerg, homosex) %>%
+  summarize(freq = n()) %>%
+  pivot_wider(id_cols=homosex, names_from=conclerg, names_prefix='conclerg: ', values_from=freq)
+
+kable(conclerg_homosex)
+```
+
+The following can also be used as a stacked bar graph for comparing proportions of our response variable and explanatory variable. The stacked bar graph also shows us the proportions of the response variable with the explanatory variable. The response variable is the acceptance of homosexual sexual relations, plotted on the y-axis. On the other hand, the explanatory variable is the confidence in organized religion, plotted on the x-axis.
+
+```{r}
+ggplot(data=gss_clean %>% filter(year==2002), aes(x = conclerg, fill = homosex)) + 
+  geom_bar(position="fill", na.rm = TRUE) +
+  ylab("Proportions of acceptance of homosexual sexual relations") + 
+  xlab("Confidence in organized religion")
+```
+
+There seems to be a more substantial proportion of people that find homosexual sexual relations "Always Wrong" for the group that has "A Great Deal" of confidence in organized religion. On the other hand, this "Always Wrong" proportion seems to be much smaller for the "Hardly Any" group.
+
+To check if there is an association between confidence in organized religion and acceptance of homosexual sexual relations in 2002, we need to perform a hypothesis test.
 
 
 * * *
