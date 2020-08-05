@@ -17,6 +17,7 @@ library(dplyr)
 library(statsr)
 library(tidyr)
 library(knitr)
+library(tidyverse)
 ```
 
 ### Load data
@@ -209,7 +210,7 @@ homosex_year_prop %>%
   select(c(homosex, prop))
 ```
 
-Based on the one-variable contingency table above, higher proportions of people in 2002 tend to be against homosexual sexual relationships.
+Based on the one-way contingency table above, higher proportions of people in 2002 tend to be against homosexual sexual relationships.
 
 ```{r}
 conclerg_year_prop %>%
@@ -226,9 +227,18 @@ conclerg_homosex <- gss_clean %>%
   filter(year==2002) %>%
   group_by(conclerg, homosex) %>%
   summarize(freq = n()) %>%
-  pivot_wider(id_cols=homosex, names_from=conclerg, names_prefix='conclerg: ', values_from=freq)
+  pivot_wider(id_cols=homosex, names_from=conclerg, values_from=freq)
 
+conclerg_homosex <- conclerg_homosex %>% 
+  remove_rownames %>% 
+  column_to_rownames(var="homosex")
+
+conclerg_homosex <- as.table(as.matrix(conclerg_homosex))
 kable(conclerg_homosex)
+```
+
+```{r}
+kable(prop.table(conclerg_homosex, 2))
 ```
 
 The following can also be used as a stacked bar graph for comparing proportions of our response variable and explanatory variable. The stacked bar graph also shows us the proportions of the response variable with the explanatory variable. The response variable is the acceptance of homosexual sexual relations, plotted on the y-axis. On the other hand, the explanatory variable is the confidence in organized religion, plotted on the x-axis.
@@ -248,6 +258,60 @@ To check if there is an association between confidence in organized religion and
 * * *
 
 ## Part 4: Inference
+
+Since we're trying to test whether the two variables are associated as mentioned in the research question, we need to perform a hypothesis test. We'll be using the chi-square test of independence, since we're evaluating the independence of two categorical variables where at least one of them has more than two levels. In our case, `homosex` has 4 levels while `conlerg` has three.
+
+### Hypotheses
+
+Our hypotheses can this be defined as:
+
+$H_{0}$: The acceptance of homosexual sexual relations is independent of the confidence in organized religion in the United States in 2002. The observed difference is due to chance and they do not vary with each other.
+
+$H_{A}$: The acceptance of homosexual sexual relations is associated with the confidence in organized religion in the United States in 2002. The observed difference is not due to chance and they vary with each other.
+
+### Conditions for the chi-square test of independence
+
+The following conditions need to be met for us to carry out the hypothesis test.
+
+1. **Independence**: 
+    - The data collected by GSS are random samples. 
+    - Since GSS samples without replacement, the sample size is certainly less than 10% of the total population in the US.
+    - Furthermore, each case only contributes to one cell in the table due to the design in the survey. Each respondant can only give one answer for each question of the questions on `conclerg` and `homosex`.
+    - Thus we can say the independence criteria is satisfied.
+  
+Calculating expected count for the chi-square test of independence. The approach for this can be found on StackOverflow ^[[R function to get a table of expected counts](https://stackoverflow.com/questions/34214787/is-there-an-r-function-to-get-a-table-of-expected-counts)]:
+
+```{r}
+Xsq <- chisq.test(conclerg_homosex)
+conclerg_homosex_exp <- conclerg_homosex 
+conclerg_homosex_exp[] <- paste(conclerg_homosex, paste0("(",round(Xsq$expected),")"))
+kable(conclerg_homosex_exp)
+```
+
+2. **Sample size**: Since each cell does not have at least 5 expected cases, we cannot use the chi-square test for this. Instead we'll have to use a simulation.
+
+3. **Dof**: 
+   - The degrees of freedom in this case should be greater than 2.
+   - This can be calculated as follows:
+
+$$\begin{aligned}
+dof = (R-1) \times (C-1)
+\end{aligned}
+$$
+
+ where,
+  R is the number of rows
+  C is the number of columns
+  
+  - $\implies dof = (4-1) \times (3-1) = 6$
+  - Hence this condition is satisfied
+  
+### Chi-square test with simulation
+
+```{r}
+Xsq <- chisq.test(conclerg_homosex, simulate.p.value = TRUE)
+```
+
 
 * Talk about out of wedlock - is it married people of the same gender
 * Talk about question being out of context
