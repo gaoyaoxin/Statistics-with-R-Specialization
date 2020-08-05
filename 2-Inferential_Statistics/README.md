@@ -37,7 +37,8 @@
 ## Week 5
 
 - [Final Project](/assignment/week5)
-- [Final Project (Rpubs)]()
+- [Final Project (pdf)](/assignment/week5/stat_inf_project.pdf)
+- [Final Project (Rpubs)](https://rpubs.com/jacobjohn2016/646327)
 
 ## Credits
 

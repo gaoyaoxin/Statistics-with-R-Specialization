@@ -126,7 +126,7 @@ The respondents then selects one of the following options:
 |-------|------------------|
 | NA    | IAP              |
 | 1     | ALWAYS WRONG     |
-| 2     | ALMOST ALWAYS WRG |
+| 2     | ALMST ALWAYS WRG |
 | 3     | SOMETIMES WRONG  |
 | 4     | NOT WRONG AT ALL |
 | 5     | OTHER            |
@@ -156,7 +156,8 @@ We're going to start by taking a look at how the acceptance of homosexual sexual
 ggplot(data=gss_clean, aes(x = year, fill = homosex)) + 
   geom_bar(position="fill", na.rm = TRUE) +
   ylab("Proportions for acceptance of homosexual sexual relations") + 
-  xlab("Year")
+  xlab("Year") +
+  ggtitle("Stacked bar chart showing proportions of homosex with respect to each year")
 ```
 
 There seems to be a general rise in the acceptance of homosexual sexual relations. The stacked bar plot above shows an increase in the proportions of "Not Wrong At All" and decrease in the proportions of "Always Wrong". A majority of the responses for `homosex` seem to be in the extremes as the proportions of responses for "Almst Always Wrg" and "Sometimes Wrong" look much smaller. We can confirm this using a line plot of the proportions:
@@ -171,7 +172,8 @@ homosex_year_prop <- gss_clean %>%
 ggplot(data=homosex_year_prop, aes(x=year, y=prop)) +
   geom_line(aes(color=homosex, linetype=homosex)) +
   ylab("Proportions for acceptance of homosexual sexual relations") + 
-  xlab("Year")
+  xlab("Year") +
+  ggtitle("Line plot showing proportions of conclerg with respect to each year")
 ```
 
 This general increasing trend in "Always Wrong" proportions and general decrease trend in "Almst Always Wrg" proportions can be confirmed using the plot above. These continue to increase and decrease until "Not Wrong At All" proportion is higher than that of "Always Wrong". Furthermore, the acceptance of homosexuality is in line with the research conducted by the Pew Research Center mentioned in [Part 2](## Part 2: Research question) of this project.
@@ -182,7 +184,8 @@ Now, we'll take a look at how the acceptance of confidence in organized religion
 ggplot(data=gss_clean, aes(x = year, fill = conclerg)) + 
   geom_bar(position="fill", na.rm = TRUE) +
   ylab("Proportions for confidence in organization religion") + 
-  xlab("Year")
+  xlab("Year") +
+  ggtitle("Stacked bar chart showing proportions of conclerg with respect to each year")
 ```
 
 Although not apparent, there seems to be a general decrease in the proportion responding "A Great Deal" with a substantial drop in 2003 followed by another decline in this proportion. Furthermore, there seems to be a general increase in the proportions for "Hardly Any" except the late 1980s where the proportions peaked. The "Only some" response appears to be consistent across the years. We can confirm this using a line plot of the proportions:
@@ -197,7 +200,8 @@ conclerg_year_prop <- gss_clean %>%
 ggplot(data=conclerg_year_prop, aes(x=year, y=prop)) +
   geom_line(aes(color=conclerg, linetype=conclerg)) + 
   ylab("Proportions for confidence in organization religion") + 
-  xlab("Year")
+  xlab("Year") +
+  ggtitle("Line plots showing proportions of conclerg with respect to each year")
 ```
 
 Based on the line plot above, there seems to be no apparent trend in the "Only some" response as proportions seem to increase and decrease regardless of the passage in time. Furthermore, the general increase in "Hardly Any" proportions and a general decrease in the "A Great Deal" proportions are evident. However, "A Great Deal" constituents to a more substantial proportion of the sample.
@@ -222,7 +226,7 @@ Based on the table above, the proportions of "Hardly Any" exceed those of "A Gre
 
 Now to summarize the association, we will construct a two-way contingency table for the year 2002. The table below shows the distribution of responses by accepting homosexual sexual activity and confidence in organized religion:
 
-```{r}
+```{r, message = FALSE}
 conclerg_homosex <- gss_clean %>%
   filter(year==2002) %>%
   group_by(conclerg, homosex) %>%
@@ -234,11 +238,14 @@ conclerg_homosex <- conclerg_homosex %>%
   column_to_rownames(var="homosex")
 
 conclerg_homosex <- as.table(as.matrix(conclerg_homosex))
-kable(conclerg_homosex)
+dimnames(conclerg_homosex) <- list(homosex = rownames(conclerg_homosex), 
+                                   conclerg = colnames(conclerg_homosex))
+conclerg_homosex
 ```
 
 ```{r}
-kable(prop.table(conclerg_homosex, 2))
+# Proportions of homosex factors within each conclerg factor
+prop.table(conclerg_homosex, 2)
 ```
 
 The following can also be used as a stacked bar graph for comparing proportions of our response variable and explanatory variable. The stacked bar graph also shows us the proportions of the response variable with the explanatory variable. The response variable is the acceptance of homosexual sexual relations, plotted on the y-axis. On the other hand, the explanatory variable is the confidence in organized religion, plotted on the x-axis.
@@ -247,7 +254,8 @@ The following can also be used as a stacked bar graph for comparing proportions 
 ggplot(data=gss_clean %>% filter(year==2002), aes(x = conclerg, fill = homosex)) + 
   geom_bar(position="fill", na.rm = TRUE) +
   ylab("Proportions of acceptance of homosexual sexual relations") + 
-  xlab("Confidence in organized religion")
+  xlab("Confidence in organized religion") +
+  ggtitle("Stacked bar plot chart showing the proportions for homosex factors within each conclerg factor")
 ```
 
 There seems to be a more substantial proportion of people that find homosexual sexual relations "Always Wrong" for the group that has "A Great Deal" of confidence in organized religion. On the other hand, this "Always Wrong" proportion seems to be much smaller for the "Hardly Any" group.
@@ -279,39 +287,101 @@ The following conditions need to be met for us to carry out the hypothesis test.
     - Furthermore, each case only contributes to one cell in the table due to the design in the survey. Each respondant can only give one answer for each question of the questions on `conclerg` and `homosex`.
     - Thus we can say the independence criteria is satisfied.
   
-Calculating expected count for the chi-square test of independence. The approach for this can be found on StackOverflow ^[[R function to get a table of expected counts](https://stackoverflow.com/questions/34214787/is-there-an-r-function-to-get-a-table-of-expected-counts)]:
+Calculating expected count for the chi-square test of independence. The approach for this can be found on StackOverflow ^[[R function to get a table of expected counts](https://stackoverflow.com/questions/34214787/is-there-an-r-function-to-get-a-table-of-expected-counts)]. We use the following formula for expected counts for the $i^{th}$ row and the $j^{th}$ column:
 
-```{r}
+$Expected\ Count_{row\ i, col\ j} = \frac{(row\ i\ total)\times(column\ j\ total)}{table\ total}$
+
+```{r message=FALSE}
+# run a chi-square test to get the expected values
 Xsq <- chisq.test(conclerg_homosex)
-conclerg_homosex_exp <- conclerg_homosex 
-conclerg_homosex_exp[] <- paste(conclerg_homosex, paste0("(",round(Xsq$expected),")"))
-kable(conclerg_homosex_exp)
+conclerg_homosex_chi <- conclerg_homosex
+conclerg_homosex_expected <- round(Xsq$expected)
+conclerg_homosex_chi[] <- paste(conclerg_homosex, paste0("(",conclerg_homosex_expected,")"))
+
+# addmargins for the row and column totals
+conclerg_homosex_margins <- addmargins(conclerg_homosex)
+conclerg_homosex_chi <- cbind(conclerg_homosex_chi, conclerg_homosex_margins[-5, 4])
+conclerg_homosex_chi <- rbind(conclerg_homosex_chi, conclerg_homosex_margins[5,])
+
+# rename the last column and last row as Total
+colnames(conclerg_homosex_chi)[4] <- "Total"
+rownames(conclerg_homosex_chi)[5] <- "Total"
+dimnames(conclerg_homosex_chi) <- list(homosex = rownames(conclerg_homosex_chi),
+                                       conclerg = colnames(conclerg_homosex_chi))
+kable(conclerg_homosex_chi, caption='Observed counts and (the expected counts)')
 ```
 
 2. **Sample size**: Since each cell does not have at least 5 expected cases, we cannot use the chi-square test for this. Instead we'll have to use a simulation.
 
-3. **Dof**: 
-   - The degrees of freedom in this case should be greater than 2.
-   - This can be calculated as follows:
+3. **Degrees of Freedom**: 
+   - The degrees of freedom (dof) in this case should be greater than 2.
+   - This can be calculated as $dof = (R-1) \times (C-1)$
+   - where, $R$ is the number of rows and $C$ is the number of columns
+   - $\implies dof = (4-1) \times (3-1) = 6$
+   - Hence this condition is satisfied
 
-$$\begin{aligned}
-dof = (R-1) \times (C-1)
-\end{aligned}
-$$
+Since we didn't pass all conditions for performing a ch-square test, we'll need to perform a simulation in order to construct our inference. 
 
- where,
-  R is the number of rows
-  C is the number of columns
-  
-  - $\implies dof = (4-1) \times (3-1) = 6$
-  - Hence this condition is satisfied
-  
 ### Chi-square test with simulation
 
+We'll used two methods for simulation of a two-way table - Only the row totals are fixed^[[How to simulate effectiveness of treatment in R](https://stats.stackexchange.com/questions/134293/how-to-simulate-effectiveness-of-treatment-in-r)] and the Monte Carlo Simulation ^[[Hope, A. C. A. (1968). A simplified Monte Carlo significance test procedure. Journal of the Royal Statistical Society Series B, 30, 582–598.](https://www.jstor.org/stable/2984263?seq=1)]. We want to identify the sampling distribution for each cell's test-statistic ($\chi^{2}$) if the null hypothesis was true. In this case, we want to see how far the observed values are from expected values then use this information as evidence to reject the null hypothesis.
+
+#### Patefield's Algorithm
+
+Patefield's algorithm presents an efficient way of generating a table. It simulates under the assumption of independence for each random cell given that the margins are fixed. The number of replications in this case will be 15000.
+
 ```{r}
-Xsq <- chisq.test(conclerg_homosex, simulate.p.value = TRUE)
+## Simulate permutation test for independence based on the maximum
+## Pearson residuals (rather than their sum).
+rowTotals <- rowSums(conclerg_homosex)
+colTotals <- colSums(conclerg_homosex)
+nOfCases <- sum(rowTotals)
+expected <- outer(rowTotals, colTotals, "*") / nOfCases
+
+# expected values based on patefield's algorithm
+conclerg_homosex_pat <- conclerg_homosex
+conclerg_homosex_pat[] <- paste(conclerg_homosex, paste0("(",round(expected),")"))
+kable(conclerg_homosex_pat, 
+      caption='Observed counts and (the expected counts) generated using Patfields algorithm')
+
+maxSqResid <- function(x) max((x - expected) ^ 2 / expected)
+simMaxSqResid <-
+    sapply(r2dtable(15000, rowTotals, colTotals), maxSqResid)
+p_value <- sum(simMaxSqResid >= maxSqResid(conclerg_homosex)) / 15000
+p_value
+```
+Since the p-value in this case is less than 0.05. We can reject the null hypothesis.
+
+#### Monte Carlo Simulation
+
+Monte-Carlo Simulation is to used to produce a reference distribution, based on randomly generated samples which will have the same size as the observed sample, in order to compute p-values when sample size conditions are not satisfied. The number of replications in this case will be 15000.
+
+```{r}
+Xsq <- chisq.test(conclerg_homosex, simulate.p.value = TRUE, B = 15000)
+# expected values based on monte carlo
+conclerg_homosex_mc <- conclerg_homosex
+conclerg_homosex_mc[] <- paste(conclerg_homosex, 
+                               paste0("(",round(expected),")"))
+kable(conclerg_homosex_mc, 
+      caption='Observed counts and (the expected counts) generated using Monte Carlo Simulation')
+Xsq
 ```
 
+Since the p-value in this case is less than 0.05. We can reject the null hypothesis.
 
-* Talk about out of wedlock - is it married people of the same gender
-* Talk about question being out of context
+### Inference
+
+We can't construct a Confidence Interval for this data as it is a two-way contingency table. Furthermore, there is no null value or sample estimate to construct a confidence interval around. Furthermore, we're not calculating any means, medians nor proportions, instead, we're trying to find whether the observed and expected values are significantly different. There are more than two values to compare. Finally, since we're not estimating any population parameter, a confidence interval will not yield any benefits to us. 
+
+Since the p-value in both simulations is $\le 0.05$, we can safely reject the null hypothesis, $H_{0}$. Therefore, the data provide strong evidence that there is an association between the acceptance of homosexual sexual relations and the confidence in organized religion in the United States in 2002. Furthermore, the acceptance of homosexual sexual relationships tends to vary with a respondent's confidence in organized religion.
+
+> Therefore, can we conclude from this analysis that respondents with a great deal of confidence in organized religion will find homosexual sexual relationships wrong?
+
+No, the result of this could be a Type 1 error. The reasons why are as follows:
+
+* Marriage among the same sex wasn't legalized in all states in the USA until 2015. Certain religions, such as Christianity, could view this as excessive intimacy out of wedlock, which is forbidden.
+* Based on the ballot of 2002, the question was asked with regards to "Christian Organizations," which could mean the data is under representative.
+* A significant proportion (and number) of people with "Only Some" confidence in organized religion still exists, based on the graphs displayed above.
+* Since this is an observational study, causal effects cant be assumed. Furthermore, other confounding variables such as neighborhood, schools, age, religion, etc. have not been considered.
+* This is just an observational study based on a small sample since a few cells were below 5. 
+* According to Hope's paper on the Monte Carlo significance test procedure, "It is preferable to use a known test of good efficiency instead of a Monte-Carlo test procedure assuming that the alternative statistical hypothesis can be completely specified." Therefore any results must be presented with skepticism.
