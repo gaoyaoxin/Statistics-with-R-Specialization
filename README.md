@@ -13,3 +13,4 @@ This repo contains lectures and assignments of [Duke University's Statistics wit
 | -------------------------------------------------- | ------------------------------------ |
 | [Course 1](1-Introduction_to_Probability_and_Data) | Introduction to Probability and Data |
 | [Course 2](2-Inferential_Statistics)               | Inferential Statistics               |
+| [Course 3](3-Linear_Regression+Modeling)           | Linear Regression and Modeling       |
