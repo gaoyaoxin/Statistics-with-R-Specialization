@@ -12,7 +12,7 @@
 ## Week 2
 
 - [Assignment](assignment/week2)
-- [Assignment (Rpubs)]()
+- [Assignment (Rpubs)](https://rpubs.com/jacobjohn2016/648787)
 
 ## Week 3
 

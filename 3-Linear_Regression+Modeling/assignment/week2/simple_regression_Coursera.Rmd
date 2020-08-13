@@ -38,6 +38,7 @@ Let's load the packages.
 library(statsr)
 library(dplyr)
 library(ggplot2)
+library(broom)
 ```
 
 ### The data
@@ -55,24 +56,31 @@ percentage, and on-base plus slugging. For the first portion of the analysis
 we'll consider the seven traditional variables. At the end of the lab, you'll 
 work with the three newer variables on your own.
 
+```{r}
+head(mlb11)
+```
+
 1. What type of plot would you use to display the relationship between `runs` and one of the other numerical variables? 
 <ol>
 <li> histogram </li> 
 <li> box plot </li> 
-<li> scatterplot </li> 
+<li> **scatterplot** </li> 
 <li> bar plot </li>
 </ol>
 
+We use a scatter plot to display relationships between two numerical variables.
+
 2. Plot the relationship between `runs` and `at_bats`, using `at_bats` as the explanatory variable. <br> The relationship appears to be ...
 <ol>
-<li> linear </li> 
 <li> negative </li> 
+<li> **linear** </li> 
 <li> horseshoe-shaped ($\cap$) </li>  
 <li> u-shaped ($\cup$) </li>
 </ol>
 ```{r runs-vs-at_bats}
 # type your code for Question 2 here, and Knit
-
+ggplot(data= mlb11, aes(x=at_bats, y=runs)) +
+  geom_point()
 ```
 
 <div id="exercise">
@@ -84,9 +92,57 @@ If the relationship looks linear, we can quantify the strength of the
 relationship with the correlation coefficient.
 
 ```{r cor}
-mlb11 %>%
+corr_coeff <- mlb11 %>%
   summarise(cor(runs, at_bats))
+corr_coeff
 ```
+When evaluating whether a model is linear, the following conditions should be met:
+
+#### 1. Linearity: 
+
+```{r}
+lm_fit <- lm(runs ~ at_bats, data = mlb11)
+summary(lm_fit)
+
+ggplot(data= mlb11, aes(x=at_bats, y=runs)) +
+  geom_point() +
+  stat_smooth(method = 'lm', col = 'red') +
+  labs(title = paste("Adj_R2 = ",signif(summary(lm_fit)$adj.r.squared, 5),
+                     "; Beta_0 = ", signif(lm_fit$coef[[1]], 5),
+                     "; Beta_1 = ", signif(lm_fit$coef[[2]], 5),
+                     "; P_value = ", signif(summary(lm_fit)$coef[2,4], 5)))
+```
+
+The relationship between `at_bats` and `runs` looks linear. The correlation coefficient of 0.61 confirms a weak linear association between the two variables.
+
+#### 2. Nearly Normal Residuals:
+
+Source: [Quick start guide - R software and data visualization](http://www.sthda.com/english/wiki/ggplot2-histogram-plot-quick-start-guide-r-software-and-data-visualization)
+
+```{r}
+resid_df <- augment(lm_fit)
+
+ggplot(resid_df, aes(x = .resid)) + 
+  geom_histogram(aes(y=..density..), color="black", fill="white", binwidth = 5) + 
+  geom_density(alpha=.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(resid_df$.resid)),
+            color="blue", linetype="dashed", size=1)
+
+ggplot(data = resid_df, aes(sample = .resid)) +
+  stat_qq()
+```
+
+The residuals are fairly symmetric, with only a slightly longer tail on the right, hence it would be appropriate to deem the the normal distribution of residuals condition met.
+
+#### 3. Constant Variability
+
+```{r}
+ggplot(resid_df, aes(x = .fitted, y = .resid)) + 
+  geom_point() + 
+  geom_hline(yintercept = 0, linetype = "dashed")
+```
+
+We can confirm this with a residual plot. There is a constant variability, hence this is homoscedasticity.. However, one of the potential outliers is a team with approximately 5520 at bats.
 
 ## Sum of squared residuals
 
@@ -105,7 +161,7 @@ such as `runs` and `at_bats` above.
 3. Looking at your plot from the previous exercise, which of the following best describe the relationship between these two variables? 
 <ol>
 <li> The relationship is negative, linear, and moderately strong. One of the potential outliers is a team with approximately 5520 at bats. </li>
-<li> The relationship is positive, linear, and moderately strong. One of the potential outliers is a team with approximately 5520 at bats. </li>
+<li> **The relationship is positive, linear, and moderately strong. One of the potential outliers is a team with approximately 5520 at bats.** </li>
 <li> The relationship is positive, linear, and very weak. There are no outliers. </li>
 <li> The relationship is positive, linear, and very weak. One of the potential outliers is a team with approximately 5520 at bats. </li>
 </ol>
@@ -147,11 +203,13 @@ the sum of squares.  Run the function several times.  Report your smallest sum
 of squares.
 </div>
 
+Best Sum of Squares: 123721.9
+
 ## The linear model
 
 It is rather cumbersome to try to get the correct least squares line, i.e. the 
 line that minimizes the sum of squared residuals, through trial and error. 
-Instead we can use the `lm` function in R to fit the linear model (a.k.a. 
+Instead, we can use the `lm` function in R to fit the linear model (a.k.a. 
 regression line).
 
 ```{r m1}
@@ -190,7 +248,7 @@ explained by at-bats.
 
 4. Fit a new model that uses `homeruns` to predict `runs`.  Using the estimates from the R output, write the equation of the regression line. What does the slope tell us in the context of the relationship between success of a team and its home runs? 
 <ol>
-<li> For each additional home run, the model predicts 1.83 more runs, on average. </li>
+<li> **For each additional home run, the model predicts 1.83 more runs, on average.** </li>
 <li> Each additional home run increases runs by 1.83. </li>
 <li> For each additional home run, the model predicts 1.83 fewer runs, on average. </li>
 <li> For each additional home run, the model predicts 415.24 more runs, on average. </li> 
@@ -198,7 +256,8 @@ explained by at-bats.
 </ol>
 ```{r homeruns-vs-runs}
 # type your code for Question 4 here, and Knit
-
+m2 <- lm(runs ~ homeruns, data = mlb11)
+summary(m2)
 ```
 
 ## Prediction and prediction errors
@@ -229,23 +288,24 @@ not the actual data, how many runs would he or she predict for a team with
 
 To find the observed number of runs for the team with 5,579 at bats you can use the following:
 ```{r eval=FALSE}
-mlb11 %>%
+y_actual <- mlb11 %>%
   filter(at_bats == 5579) %>%
   select(runs)
+y_actual
 ```
 This code first filters for rows observation. `at_bats` is 5579, and then shows the 
 value of the `runs variable for that observation.
 
 5. What is the residual for the prediction of runs for a team with 5,579 at-bats? Choose the closest answer. 
 <ol>
-<li> -15.32 </li>
+<li> **-15.32** </li>
 <li> 15.32 </li>
 <li> 713 </li>
 <li> 5579 </li>
 </ol>
 ```{r residual}
 # type your code for Question 5 here, and Knit
-
+713 - predict(m1, data.frame(at_bats = 5579))
 ```
 
 ## Model diagnostics
@@ -270,7 +330,7 @@ Notice here that our model object `m1` can also serve as a data set because stor
 6. Which of the following statements about the residual plot is false? 
 <ol>
 <li> The residuals appear to be randomly distributed around 0. </li> 
-<li> The residuals show a curved pattern. </li> 
+<li> **The residuals show a curved pattern.** </li> 
 <li> The plot is indicative of a linear relationship between runs and at-bats. </li> 
 <li> The team with a very high residual compared to the others appears to be an outlier. </li>
 </ol>
@@ -297,14 +357,14 @@ Note that the syntax for making a normal probability plot is a bit different tha
 <li> The residuals are extremely right skewed, hence the normal distribution of residuals condition is not met. </li>
 <li> The residuals are extremely left skewed, hence the normal distribution of residuals condition is not met. </li> 
 <li> The residuals are perfectly symmetric, hence the normal distribution of residuals condition is met. </li>
-<li> The residuals are fairly symmetric, with only a slightly longer tail on the right, hence it would be appropriate to deem the the normal distribution of residuals condition met. </li>
+<li> **The residuals are fairly symmetric, with only a slightly longer tail on the right, hence it would be appropriate to deem the the normal distribution of residuals condition met.** </li>
 </ol>
 
 **Constant variability**:
 
 8. Based on the residuals plot from earlier, the constant variability condition appears to be met. 
 <ol> 
-<li> True </li>
+<li> **True** </li>
 <li> False </li>
 </ol>
 
@@ -316,7 +376,12 @@ does there seem to be a linear relationship?
 </div>
 ```{r runs-vs-sth-else}
 # type your code for the Exercise here, and Knit
+ggplot(data = mlb11, aes(x = wins, y = runs)) +
+  geom_point() +
+  stat_smooth(method = "lm", se = FALSE)
 
+m3 <- lm('runs ~ wins',data = mlb11)
+summary(m3)
 ```
 
 <div id="exercise">
@@ -327,7 +392,7 @@ can you tell?
 </div>
 ```{r pick-model}
 # type your code for the Exercise here, and Knit
-
+summary(m3)$adj.r.squared
 ```
 
 9. Now that you can summarize the linear relationship between two variables, investigate the relationships between `runs` and each of the other five traditional variables. Which variable best predicts `runs`? Support your conclusion using the graphical and numerical methods we've discussed.
@@ -335,23 +400,85 @@ can you tell?
 <li> at bats </li>
 <li> hits </li>
 <li> wins </li>
-<li> batting average </li>
+<li> **batting average** </li>
 </ol>
 ```{r runs-vs-others}
 # type your code for Question 9 here, and Knit
+ggplot(data= mlb11, aes(x=wins, y=runs)) +
+  geom_point() +
+  stat_smooth(method = 'lm', col = 'red') +
+  labs(title = paste("Adj_R2 = ",signif(summary(m3)$adj.r.squared, 5),
+                     "; Beta_0 = ", signif(m3$coef[[1]], 5),
+                     "; Beta_1 = ", signif(m3$coef[[2]], 5),
+                     "; P_value = ", signif(summary(m3)$coef[2,4], 5)))
 
+m4 <- lm('runs ~ at_bats',data = mlb11)
+ggplot(data= mlb11, aes(x=at_bats, y=runs)) +
+  geom_point() +
+  stat_smooth(method = 'lm', col = 'red') +
+  labs(title = paste("Adj_R2 = ",signif(summary(m4)$adj.r.squared, 5),
+                     "; Beta_0 = ", signif(m4$coef[[1]], 5),
+                     "; Beta_1 = ", signif(m4$coef[[2]], 5),
+                     "; P_value = ", signif(summary(m4)$coef[2,4], 5)))
+
+m5 <- lm('runs ~ hits',data = mlb11)
+ggplot(data= mlb11, aes(x=hits, y=runs)) +
+  geom_point() +
+  stat_smooth(method = 'lm', col = 'red') +
+  labs(title = paste("Adj_R2 = ",signif(summary(m5)$adj.r.squared, 5),
+                     "; Beta_0 = ", signif(m5$coef[[1]], 5),
+                     "; Beta_1 = ", signif(m5$coef[[2]], 5),
+                     "; P_value = ", signif(summary(m5)$coef[2,4], 5)))
+
+m6 <- lm('runs ~ bat_avg',data = mlb11)
+ggplot(data= mlb11, aes(x=bat_avg, y=runs)) +
+  geom_point() +
+  stat_smooth(method = 'lm', col = 'red') +
+  labs(title = paste("Adj_R2 = ",signif(summary(m6)$adj.r.squared, 5),
+                     "; Beta_0 = ", signif(m6$coef[[1]], 5),
+                     "; Beta_1 = ", signif(m6$coef[[2]], 5),
+                     "; P_value = ", signif(summary(m6)$coef[2,4], 5)))
 ```
+
+Since `bat_avg` has the highest $R^{2}$ value and the lowest p_value, we can say it's the best predictor of `runs`.
 
 10. Now examine the three newer variables.  These are the statistics used by the author of *Moneyball* to predict a teams success.  In general, are they more or less effective at predicting runs that the old variables?  Explain using appropriate graphical and numerical evidence.  Of all ten variables we've analyzed, which seems to be the best predictor of `runs`? 
 <ol>
-<li> on-base plus slugging (`new_obs`) </li>
+<li> **on-base plus slugging (`new_obs`)** </li>
 <li> slugging percentage (`new_slug`) </li> 
 <li> on-base percentage (`new_onbase`) </li>
 </ol>
 ```{r runs-vs-new-vars}
 # type your code for Question 10 here, and Knit
+m7 <- lm('runs ~ new_obs',data = mlb11)
+ggplot(data= mlb11, aes(x=new_obs, y=runs)) +
+  geom_point() +
+  stat_smooth(method = 'lm', col = 'red') +
+  labs(title = paste("Adj_R2 = ",signif(summary(m7)$adj.r.squared, 5),
+                     "; Beta_0 = ", signif(m7$coef[[1]], 5),
+                     "; Beta_1 = ", signif(m7$coef[[2]], 5),
+                     "; P_value = ", signif(summary(m7)$coef[2,4], 5)))
 
+m8 <- lm('runs ~ new_slug',data = mlb11)
+ggplot(data= mlb11, aes(x=new_slug, y=runs)) +
+  geom_point() +
+  stat_smooth(method = 'lm', col = 'red') +
+  labs(title = paste("Adj_R2 = ",signif(summary(m8)$adj.r.squared, 5),
+                     "; Beta_0 = ", signif(m8$coef[[1]], 5),
+                     "; Beta_1 = ", signif(m8$coef[[2]], 5),
+                     "; P_value = ", signif(summary(m8)$coef[2,4], 5)))
+
+m9 <- lm('runs ~ new_onbase',data = mlb11)
+ggplot(data= mlb11, aes(x=new_onbase, y=runs)) +
+  geom_point() +
+  stat_smooth(method = 'lm', col = 'red') +
+  labs(title = paste("Adj_R2 = ",signif(summary(m9)$adj.r.squared, 5),
+                     "; Beta_0 = ", signif(m9$coef[[1]], 5),
+                     "; Beta_1 = ", signif(m9$coef[[2]], 5),
+                     "; P_value = ", signif(summary(m9)$coef[2,4], 5)))
 ```
+
+Since `new_obs` has the highest $R^{2}$ value and the lowest p_value, we can say it's the best predictor of `runs`.
 
 <div id="exercise">
 **Exercise**: Check the model diagnostics for the regression model with the 
@@ -359,8 +486,10 @@ variable you decided was the best predictor for runs.
 </div>
 ```{r diag}
 # type your code for the Exercise here, and Knit
-
+summary(m7)
 ```
+
+Yes, since the p_value for the intercept is very low, we reject the null hypothesis of no relationship (i.e. slope of 0). This means the explanatory variable is a significant predictor of the response variable. Furthermore, the p_value of the F-Statistic is also very low. 
 
 <div id="license">
 This is a product of OpenIntro that is released under a [Creative Commons 
