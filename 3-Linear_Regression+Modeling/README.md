@@ -16,6 +16,7 @@
 
 ## Week 3
 
+- [Practice](practice/week3)
 - [Assignment](assignment/week3)
 - [Assignment (Rpubs)]()
   

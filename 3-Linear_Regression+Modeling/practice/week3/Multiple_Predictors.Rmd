@@ -1,0 +1,18 @@
+---
+title: "Multiple Predictors"
+output: statsr:::statswithr_lab
+---
+
+## Load Data
+
+```{r}
+library(DAAG)
+data(allbacks)
+```
+
+## Fit Model
+
+```{r}
+book_mlr <- lm(weight ~ volume + cover, data = allbacks)
+summary(book_mlr)
+```

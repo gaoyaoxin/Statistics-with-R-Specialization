@@ -1,0 +1,31 @@
+---
+title: "Adjusted $R^{2}$"
+output: statsr:::statswithr_lab
+---
+
+## Load Data
+
+```{r}
+states = read.csv('../data/states.csv')
+```
+
+## Fit Model
+
+```{r}
+pov_slr <- lm(poverty ~ female_house, data = states)
+summary(pov_slr)
+```
+
+## ANOVA
+
+```{r}
+anova(pov_slr)
+```
+
+## predicting poverty from % female householder + % white
+
+```{r}
+pov_mlr <- lm(poverty ~ female_house + white, data = states)
+summary(pov_mlr)
+anova(pov_mlr)
+```
