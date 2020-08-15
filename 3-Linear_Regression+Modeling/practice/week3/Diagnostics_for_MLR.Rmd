@@ -1,0 +1,37 @@
+---
+title: "Diagnostics for MLR"
+output: statsr:::statswithr_lab
+---
+
+## Load Data
+
+```{r}
+cognitive = read.csv('../data/cognitive.csv')
+```
+
+## Linear Relationship
+
+```{r}
+cog_full <- lm(kid_score ~ mom_hs + mom_iq + mom_work + mom_age, data = cognitive)
+plot(cog_full$residuals ~ cognitive$mom_iq)
+```
+
+## Nearly Normal
+
+```{r}
+hist(cog_full$residuals)
+qqnorm(cog_full$residuals)
+qqline(cog_full$residuals)
+```
+
+## Constant Variability
+
+```{r}
+plot(cog_full$residuals ~ cog_full$fitted)
+plot(abs(cog_full$residuals) ~ cog_full$fitted)
+```
+## Independent Observations
+
+```{r}
+plot(cog_full$residuals)
+```

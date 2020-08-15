@@ -1,0 +1,40 @@
+---
+title: "Inference for MLR"
+output: statsr:::statswithr_lab
+---
+
+## Load Data
+
+```{r}
+cognitive = read.csv('../data/cognitive.csv')
+```
+
+## Full Model
+
+```{r}
+cog_full <- lm(kid_score ~ mom_hs + mom_iq + mom_work + mom_age, data = cognitive)
+summary(cog_full)
+```
+
+
+## Inference
+
+```{r}
+pt(2.201, df = 429, lower.tail = FALSE) * 2
+```
+
+Reject $H_{0}$ in favor of $H_{A}$
+
+## Confidence Interval
+
+```{r}
+t_critical <- qt(0.025, df = 429)
+abs(t_critical)
+```
+
+## Final Model
+
+```{r}
+cog_final <- lm(kid_score ~ mom_hs + mom_iq + mom_work, data = cognitive)
+summary(cog_final)
+```
