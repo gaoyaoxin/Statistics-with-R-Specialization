@@ -30,6 +30,7 @@ qqline(cog_full$residuals)
 plot(cog_full$residuals ~ cog_full$fitted)
 plot(abs(cog_full$residuals) ~ cog_full$fitted)
 ```
+
 ## Independent Observations
 
 ```{r}

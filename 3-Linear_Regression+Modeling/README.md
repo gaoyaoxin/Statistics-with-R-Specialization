@@ -18,7 +18,7 @@
 
 - [Practice](practice/week3)
 - [Assignment](assignment/week3)
-- [Assignment (Rpubs)]()
+- [Assignment (Rpubs)](https://rpubs.com/jacobjohn2016/649324)
   
 ## Week 4
 
