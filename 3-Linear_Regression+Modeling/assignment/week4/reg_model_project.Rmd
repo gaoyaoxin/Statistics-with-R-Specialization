@@ -28,8 +28,6 @@ load("movies.Rdata")
 head(movies)
 ```
 
-
-
 * * *
 
 ## Part 1: Data
@@ -56,8 +54,20 @@ Some of the film studios in the dataset are Indomina Media Inc., Warner Bros. Pi
 
 The data collected is observational and captures all the significant factors of a movie such as its genre, runtime, and whether or not the movie is in the Top 200 Box Office list on BoxOfficeMojo. Furthermore, The data is also a random sample of the movies. Since no strata, blocks, quotas, nor clusters are defined, a simple random sample can be assumed. Since this data does not result from an experimentation study, nor are there any variables that are blocked nor controlled, we cannot infer causation from the data.
 
-We can, therefore, generalize these results to all U.S. movies released between 1970 and 2014.
 
+### Generalizability
+
+```{r}
+year_n_movies <- movies %>%
+  group_by(thtr_rel_year) %>%
+  summarize(n_movies = n())
+
+ggplot(data = year_n_movies, aes(x = thtr_rel_year, y = n_movies)) +
+  geom_bar(stat='identity') +
+  ggtitle("Number of movies released in theatre per year (Paramount Dataset)")
+``` 
+
+As according to the bar graph above, over 50% of the years have below 20 movies. Therefore, we cannot generalize these results to all U.S. movies released in each year. However, we can generalize this to a random sample of all U.S. movies as the dataset consists of 651. This is well below 10% of all movies released in the U.S. and it is a random sample, so we can safely assume each movie is independent of one another. 
 
 * * *
 
@@ -85,13 +95,17 @@ Where,
 * $m$ = minimum votes required to be listed in the Top 250 (currently 25,000)
 * $C$ = the mean vote across the whole report (currently 7.0)
 
-This means a major driver for higher rating are a large number of high votes (preferably above 8). Furthermore, since this proejct is primarily sigificant variables, the p-value will be considered.
+This means that an influential driver for higher ratings is a large number of top votes (preferably above 8). Furthermore, since this project is primarily concerned with significant variables, the p-value will be considered.
 
 * * *
 
 ## Part 3: Exploratory data analysis
 
 
+
+```{r}
+
+```
 
 * * *
 
