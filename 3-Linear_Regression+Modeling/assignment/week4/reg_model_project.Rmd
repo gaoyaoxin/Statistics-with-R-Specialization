@@ -15,6 +15,7 @@ output:
 library(ggplot2)
 library(dplyr)
 library(statsr)
+library(GGally)
 ```
 
 ### Load data
@@ -79,7 +80,7 @@ Since Paramount is likely to intend to capitalize on popular movies, it leads us
 
 A popular movie implies higher box office sales resulting in more revenue for the company. Paramount is likely to benefit in the form of ticket sales, DVD sales, and licensing the movie to third party vendors. Though it would be ideal to capture the popularity of a movie in terms of its financial gain, due to the nature of this dataset, we cannot do so.
 
-This project will be using the `imdb_rating` as our response variable. The IMDb is a Amazon owned online movie database that provides information related to films and television programs. As of January 2020, 83 million registered users ^[[Press Room - IMDb](https://www.imdb.com/pressroom/stats/)]. Since customers are likely to refer to IMDb ratings as a credible source for movie recommendation, a high rating is important.
+Such a prediction would also allow Paramount to decide which movie ideas to invest in based on its `genre`, `runtime`, `mpaa_rating` and other such factors available prior to the release of a movie. Furthermore, this project will be using the `imdb_rating` as our response variable. The IMDb is a Amazon owned online movie database that provides information related to films and television programs. As of January 2020, 83 million registered users ^[[Press Room - IMDb](https://www.imdb.com/pressroom/stats/)]. Since customers are likely to refer to IMDb ratings as a credible source for movie recommendation, a high rating is important.
 
 The IMDb originally used the following formula to calculate their weighted rating ^[[Wikipedia - IMDb](https://en.wikipedia.org/wiki/IMDb)]:
 
@@ -101,11 +102,51 @@ This means that an influential driver for higher ratings is a large number of to
 
 ## Part 3: Exploratory data analysis
 
+The explanatory variables of interest in our analysis are as follows:
 
+| title            | Title of movie                                                                                                                                                                            |
+|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `genre`            | Genre of movie (Action & Adventure, Comedy, Documentary, Drama, Horror, Mystery & Suspense, Other)                                                                                        |
+| `runtime`          | Runtime of movie (in minutes)                                                                                                                                                             |
+| `mpaa_rating`      | MPAA rating of the movie (G, PG, PG-13, R, Unrated)                                                                                                                                       |
+| `studio``           | Studio that produced the movie                                                                                                                                                            |
+| `thtr_rel_year`    | Year the movie is released in theaters                                                                                                                                                    |
+| `thtr_rel_month`   | Month the movie is released in theaters                                                                                                                                                   |
+| `thtr_rel_day`     | Day of the month the movie is released in theaters                                                                                                                                        |
+| `dvd_rel_year`     | Year the movie is released on DVD                                                                                                                                                         |
+| `dvd_rel_month`    | Month the movie is released on DVD                                                                                                                                                        |
+| `dvd_rel_day`      | Day of the month the movie is released on DVD                                                                                                                                             |
+| `best_pic_nom`     | Whether or not the movie was nominated for a best picture Oscar (no, yes)                                                                                                                 |
+| `best_pic_win`     | Whether or not the movie won a best picture Oscar (no, yes)                                                                                                                               |
+| `best_actor_win`   | Whether or not one of the main actors in the movie ever won an Oscar (no, yes) – note that this is not necessarily whether the actor won an Oscar for their role in the given movie       |
+| `best_actress_win` | Whether or not one of the main actresses in the movie ever won an Oscar (no, yes) – not that this is not necessarily whether the actresses won an Oscar for their role in the given movie |
+| `best_dir_win`     | Whether or not the director of the movie ever won an Oscar (no, yes) – not that this is not necessarily whether the director won an Oscar for the given movie                             |
+
+
+This analysis will not consider the following as explanatory variables. These correspond to so some form of ratings or ranking on Imdb, rotten tomatoes or BoxOfficeMojo:
+
+* `imdb_num_votes`: Number of votes on IMDB
+* `critics_rating`: Categorical variable for critics rating on Rotten Tomatoes (Certified Fresh, Fresh, Rotten)
+* `critics_score`: Critics score on Rotten Tomatoes
+* `audience_rating`: Categorical variable for audience rating on Rotten Tomatoes (Spilled, Upright)
+* `audience_score`: Audience score on Rotten Tomatoes
+* `top200_box`: Whether or not the movie is in the Top 200 Box Office list on BoxOfficeMojo (no, yes) 
+
+Based on domain knowledge, ratings on other websites wouldn't be available prior to the release of the movie and such variables are likely to have high collinearity with the response variable which will result in incorrect estimators for other factors in this analysis. We can use the a pairplot to verify our assumption:
 
 ```{r}
-
+# numerical variables
+ggpairs(movies, columns = c('imdb_rating','imdb_num_votes','critics_score','audience_score'))
 ```
+
+As mentioned earlier, some numerical rating variables such as `audience_score` and `critics_score` on rotten tomatoes tend to result in a high correlation coefficient. Thus, they have a strong linear association with the response variable, which could result in biased estimators for other variables. Furthermore, these variables won't be available to us prior to the release of a movie.
+
+```{r}
+# categorical variables
+ggpairs(movies, columns = c('imdb_rating', 'critics_rating', 'audience_rating', 'top200_box'))
+```
+
+In terms of categorical variables, we can use anova to verify if the variability 
 
 * * *
 
