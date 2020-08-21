@@ -829,7 +829,144 @@ summary {
 <div id="model-selection" class="section level3">
 <h3>Model Selection</h3>
 <p>Since we’re interested in predicting the factors of significance that constitute a move with a high rating, we’ll be using the p-value for model selection. These factors would be influential drivers in determining what the next “best” movie should consist of.</p>
+<p>We’ll be using backward selection since we’ll have to refit fewer models to identify the variables with significant p-values.</p>
+<div id="starting-with-the-complete-model" class="section level4">
+<h4>1. Starting with the complete model</h4>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1"></a>lm_full &lt;-<span class="st"> </span><span class="kw">lm</span>(imdb_rating <span class="op">~</span><span class="st"> </span>title_type <span class="op">+</span><span class="st"> </span>genre <span class="op">+</span><span class="st"> </span>runtime <span class="op">+</span><span class="st"> </span>mpaa_rating <span class="op">+</span><span class="st"> </span>studio</span>
+<span id="cb51-2"><a href="#cb51-2"></a>              <span class="op">+</span><span class="st"> </span>thtr_rel_year <span class="op">+</span><span class="st"> </span>thtr_rel_month <span class="op">+</span><span class="st"> </span>thtr_rel_day <span class="op">+</span><span class="st"> </span>dvd_rel_year </span>
+<span id="cb51-3"><a href="#cb51-3"></a>              <span class="op">+</span><span class="st"> </span>dvd_rel_month <span class="op">+</span><span class="st"> </span>dvd_rel_day <span class="op">+</span><span class="st"> </span>best_actor_win <span class="op">+</span><span class="st"> </span>best_actress_win</span>
+<span id="cb51-4"><a href="#cb51-4"></a>              <span class="op">+</span><span class="st"> </span>best_dir_win, <span class="dt">data =</span> movies)</span>
+<span id="cb51-5"><a href="#cb51-5"></a>sum_full &lt;-<span class="st"> </span><span class="kw">summary</span>(lm_full)</span>
+<span id="cb51-6"><a href="#cb51-6"></a><span class="kw">tail</span>(sum_full<span class="op">$</span>coefficients[,<span class="dv">4</span>])</span></code></pre></div>
+<pre><code>##        dvd_rel_year       dvd_rel_month         dvd_rel_day   best_actor_winyes 
+##          0.61208060          0.01540699          0.48074569          0.64007771 
+## best_actress_winyes     best_dir_winyes 
+##          0.58046830          0.04278932</code></pre>
+</div>
+<div id="drop-the-variable-with-the-highest-p-value-and-refit-the-model" class="section level4">
+<h4>2. Drop the variable with the highest p-value and refit the model</h4>
+<p>Since majority of the above variables are categorical variables, elimination of a single variable would mean dropping multiple estimators in the above output. However, since <code>dvd_rel_year</code> has the highest p-value, we’ll eliminate it and reconstruct the multiple linear regression model.</p>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1"></a>lm1 &lt;-<span class="st"> </span><span class="kw">lm</span>(imdb_rating <span class="op">~</span><span class="st"> </span>title_type <span class="op">+</span><span class="st"> </span>genre <span class="op">+</span><span class="st"> </span>runtime <span class="op">+</span><span class="st"> </span>mpaa_rating <span class="op">+</span><span class="st"> </span>studio</span>
+<span id="cb53-2"><a href="#cb53-2"></a>          <span class="op">+</span><span class="st"> </span>dvd_rel_month <span class="op">+</span><span class="st"> </span>dvd_rel_day <span class="op">+</span><span class="st"> </span>best_actor_win <span class="op">+</span><span class="st"> </span>best_actress_win</span>
+<span id="cb53-3"><a href="#cb53-3"></a>          <span class="op">+</span><span class="st"> </span>thtr_rel_year <span class="op">+</span><span class="st"> </span>thtr_rel_month <span class="op">+</span><span class="st"> </span>thtr_rel_day <span class="op">+</span><span class="st"> </span>best_dir_win, <span class="dt">data =</span> movies)</span>
+<span id="cb53-4"><a href="#cb53-4"></a>sum_lm1 &lt;-<span class="st"> </span><span class="kw">summary</span>(lm1)</span>
+<span id="cb53-5"><a href="#cb53-5"></a><span class="kw">tail</span>(sum_lm1<span class="op">$</span>coefficients[,<span class="dv">4</span>])</span></code></pre></div>
+<pre><code>##   best_actor_winyes best_actress_winyes       thtr_rel_year      thtr_rel_month 
+##          0.68505714          0.59474405          0.20453664          0.18542905 
+##        thtr_rel_day     best_dir_winyes 
+##          0.29984084          0.04250488</code></pre>
+</div>
+<div id="repeat-until-all-remaining-variables-are-significant" class="section level4">
+<h4>3. Repeat until all remaining variables are significant</h4>
+<p>The next highest p-value is that of <code>dvd_rel_day</code>, so we’ll be eliminating it and re-fitting our model.</p>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1"></a>lm2 &lt;-<span class="st"> </span><span class="kw">lm</span>(imdb_rating <span class="op">~</span><span class="st"> </span>title_type <span class="op">+</span><span class="st"> </span>genre <span class="op">+</span><span class="st"> </span>runtime <span class="op">+</span><span class="st"> </span>mpaa_rating <span class="op">+</span><span class="st"> </span>studio</span>
+<span id="cb55-2"><a href="#cb55-2"></a>          <span class="op">+</span><span class="st"> </span>dvd_rel_month <span class="op">+</span><span class="st"> </span>best_actor_win <span class="op">+</span><span class="st"> </span>best_actress_win</span>
+<span id="cb55-3"><a href="#cb55-3"></a>          <span class="op">+</span><span class="st"> </span>thtr_rel_year <span class="op">+</span><span class="st"> </span>thtr_rel_month <span class="op">+</span><span class="st"> </span>thtr_rel_day <span class="op">+</span><span class="st"> </span>best_dir_win, <span class="dt">data =</span> movies)</span>
+<span id="cb55-4"><a href="#cb55-4"></a></span>
+<span id="cb55-5"><a href="#cb55-5"></a><span class="kw">tail</span>(<span class="kw">summary</span>(lm2)<span class="op">$</span>coefficients[,<span class="dv">4</span>])</span></code></pre></div>
+<pre><code>##   best_actor_winyes best_actress_winyes       thtr_rel_year      thtr_rel_month 
+##          0.69991174          0.59105784          0.21207022          0.17616797 
+##        thtr_rel_day     best_dir_winyes 
+##          0.28213188          0.03739839</code></pre>
+<p>Rather than displaying each summary, this project will be</p>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1"></a><span class="co"># removing best_actor_win</span></span>
+<span id="cb57-2"><a href="#cb57-2"></a>lm3 &lt;-<span class="st"> </span><span class="kw">lm</span>(imdb_rating <span class="op">~</span><span class="st"> </span>title_type <span class="op">+</span><span class="st"> </span>genre <span class="op">+</span><span class="st"> </span>runtime <span class="op">+</span><span class="st"> </span>mpaa_rating <span class="op">+</span><span class="st"> </span>studio</span>
+<span id="cb57-3"><a href="#cb57-3"></a>          <span class="op">+</span><span class="st"> </span>dvd_rel_month <span class="op">+</span><span class="st"> </span>best_actress_win</span>
+<span id="cb57-4"><a href="#cb57-4"></a>          <span class="op">+</span><span class="st"> </span>thtr_rel_year <span class="op">+</span><span class="st"> </span>thtr_rel_month <span class="op">+</span><span class="st"> </span>thtr_rel_day <span class="op">+</span><span class="st"> </span>best_dir_win, <span class="dt">data =</span> movies)</span>
+<span id="cb57-5"><a href="#cb57-5"></a><span class="kw">tail</span>(<span class="kw">summary</span>(lm3)<span class="op">$</span>coefficients[,<span class="dv">4</span>])</span></code></pre></div>
+<pre><code>##       dvd_rel_month best_actress_winyes       thtr_rel_year      thtr_rel_month 
+##          0.01157711          0.57071595          0.20903550          0.17890407 
+##        thtr_rel_day     best_dir_winyes 
+##          0.28250633          0.03725812</code></pre>
+<div class="sourceCode" id="cb59"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1"></a><span class="co"># removing best_actress_win</span></span>
+<span id="cb59-2"><a href="#cb59-2"></a>lm4 &lt;-<span class="st"> </span><span class="kw">lm</span>(imdb_rating <span class="op">~</span><span class="st"> </span>title_type <span class="op">+</span><span class="st"> </span>genre <span class="op">+</span><span class="st"> </span>runtime <span class="op">+</span><span class="st"> </span>mpaa_rating <span class="op">+</span><span class="st"> </span>studio</span>
+<span id="cb59-3"><a href="#cb59-3"></a>          <span class="op">+</span><span class="st"> </span>dvd_rel_month <span class="op">+</span><span class="st"> </span>thtr_rel_year <span class="op">+</span><span class="st"> </span>thtr_rel_month <span class="op">+</span><span class="st"> </span>thtr_rel_day </span>
+<span id="cb59-4"><a href="#cb59-4"></a>          <span class="op">+</span><span class="st"> </span>best_dir_win, <span class="dt">data =</span> movies)</span>
+<span id="cb59-5"><a href="#cb59-5"></a><span class="kw">tail</span>(<span class="kw">summary</span>(lm4)<span class="op">$</span>coefficients[,<span class="dv">4</span>])</span></code></pre></div>
+<pre><code>## studioZeitgeist Films         dvd_rel_month         thtr_rel_year 
+##            0.82229205            0.01145355            0.21734791 
+##        thtr_rel_month          thtr_rel_day       best_dir_winyes 
+##            0.17917629            0.29019798            0.03609342</code></pre>
+<div class="sourceCode" id="cb61"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1"></a><span class="co"># removing thtr_rel_day</span></span>
+<span id="cb61-2"><a href="#cb61-2"></a>lm5 &lt;-<span class="st"> </span><span class="kw">lm</span>(imdb_rating <span class="op">~</span><span class="st"> </span>title_type <span class="op">+</span><span class="st"> </span>genre <span class="op">+</span><span class="st"> </span>runtime <span class="op">+</span><span class="st"> </span>mpaa_rating <span class="op">+</span><span class="st"> </span>studio</span>
+<span id="cb61-3"><a href="#cb61-3"></a>          <span class="op">+</span><span class="st"> </span>dvd_rel_month <span class="op">+</span><span class="st"> </span>thtr_rel_year <span class="op">+</span><span class="st"> </span>thtr_rel_month </span>
+<span id="cb61-4"><a href="#cb61-4"></a>          <span class="op">+</span><span class="st"> </span>best_dir_win, <span class="dt">data =</span> movies)</span>
+<span id="cb61-5"><a href="#cb61-5"></a><span class="kw">tail</span>(<span class="kw">summary</span>(lm5)<span class="op">$</span>coefficients[,<span class="dv">4</span>])</span></code></pre></div>
+<pre><code>## studioYari Film Group Releasing           studioZeitgeist Films 
+##                      0.37290287                      0.85379337 
+##                   dvd_rel_month                   thtr_rel_year 
+##                      0.01226300                      0.20318919 
+##                  thtr_rel_month                 best_dir_winyes 
+##                      0.15329968                      0.03738937</code></pre>
+<div class="sourceCode" id="cb63"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1"></a><span class="co"># removing thtr_rel_year</span></span>
+<span id="cb63-2"><a href="#cb63-2"></a>lm6 &lt;-<span class="st"> </span><span class="kw">lm</span>(imdb_rating <span class="op">~</span><span class="st"> </span>title_type <span class="op">+</span><span class="st"> </span>genre <span class="op">+</span><span class="st"> </span>runtime </span>
+<span id="cb63-3"><a href="#cb63-3"></a>          <span class="op">+</span><span class="st"> </span>mpaa_rating <span class="op">+</span><span class="st"> </span>studio <span class="op">+</span><span class="st"> </span>dvd_rel_month <span class="op">+</span><span class="st"> </span>thtr_rel_month </span>
+<span id="cb63-4"><a href="#cb63-4"></a>          <span class="op">+</span><span class="st"> </span>best_dir_win, <span class="dt">data =</span> movies)</span>
+<span id="cb63-5"><a href="#cb63-5"></a><span class="kw">tail</span>(<span class="kw">summary</span>(lm6)<span class="op">$</span>coefficients[,<span class="dv">4</span>])</span></code></pre></div>
+<pre><code>##                   studioWinstar studioYari Film Group Releasing 
+##                      0.22648183                      0.37574945 
+##           studioZeitgeist Films                   dvd_rel_month 
+##                      0.81396471                      0.01163546 
+##                  thtr_rel_month                 best_dir_winyes 
+##                      0.15723016                      0.03659125</code></pre>
+<div class="sourceCode" id="cb65"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1"></a><span class="co"># removing thtr_rel_month</span></span>
+<span id="cb65-2"><a href="#cb65-2"></a>lm7 &lt;-<span class="st"> </span><span class="kw">lm</span>(imdb_rating <span class="op">~</span><span class="st"> </span>title_type <span class="op">+</span><span class="st"> </span>genre <span class="op">+</span><span class="st"> </span>runtime </span>
+<span id="cb65-3"><a href="#cb65-3"></a>          <span class="op">+</span><span class="st"> </span>mpaa_rating <span class="op">+</span><span class="st"> </span>studio <span class="op">+</span><span class="st"> </span>dvd_rel_month </span>
+<span id="cb65-4"><a href="#cb65-4"></a>          <span class="op">+</span><span class="st"> </span>best_dir_win, <span class="dt">data =</span> movies)</span>
+<span id="cb65-5"><a href="#cb65-5"></a><span class="kw">tail</span>(<span class="kw">summary</span>(lm7)<span class="op">$</span>coefficients[,<span class="dv">4</span>])</span></code></pre></div>
+<pre><code>##         studioWeinstein Company                   studioWinstar 
+##                      0.11598378                      0.19027778 
+## studioYari Film Group Releasing           studioZeitgeist Films 
+##                      0.36804373                      0.83869949 
+##                   dvd_rel_month                 best_dir_winyes 
+##                      0.02026303                      0.03939534</code></pre>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1"></a><span class="co"># removing studio</span></span>
+<span id="cb67-2"><a href="#cb67-2"></a>lm8 &lt;-<span class="st"> </span><span class="kw">lm</span>(imdb_rating <span class="op">~</span><span class="st"> </span>title_type <span class="op">+</span><span class="st"> </span>genre <span class="op">+</span><span class="st"> </span>runtime </span>
+<span id="cb67-3"><a href="#cb67-3"></a>          <span class="op">+</span><span class="st"> </span>mpaa_rating <span class="op">+</span><span class="st"> </span>dvd_rel_month </span>
+<span id="cb67-4"><a href="#cb67-4"></a>          <span class="op">+</span><span class="st"> </span>best_dir_win, <span class="dt">data =</span> movies)</span>
+<span id="cb67-5"><a href="#cb67-5"></a><span class="kw">summary</span>(lm8)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = imdb_rating ~ title_type + genre + runtime + mpaa_rating + 
+##     dvd_rel_month + best_dir_win, data = movies)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.8797 -0.5071  0.0408  0.5736  1.9989 
+## 
+## Coefficients:
+##                                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                     5.935798   0.461898  12.851  &lt; 2e-16 ***
+## title_typeFeature Film         -0.832055   0.335192  -2.482 0.013316 *  
+## title_typeTV Movie             -1.447938   0.527358  -2.746 0.006214 ** 
+## genreAnimation                 -0.237081   0.354747  -0.668 0.504184    
+## genreArt House &amp; International  0.759338   0.282098   2.692 0.007299 ** 
+## genreComedy                    -0.081239   0.152121  -0.534 0.593505    
+## genreDocumentary                0.881991   0.360734   2.445 0.014763 *  
+## genreDrama                      0.631584   0.129028   4.895 1.26e-06 ***
+## genreHorror                    -0.117274   0.226102  -0.519 0.604171    
+## genreMusical &amp; Performing Arts  0.901765   0.307225   2.935 0.003457 ** 
+## genreMystery &amp; Suspense         0.405049   0.167914   2.412 0.016144 *  
+## genreOther                      0.609792   0.255893   2.383 0.017472 *  
+## genreScience Fiction &amp; Fantasy  0.001378   0.339838   0.004 0.996766    
+## runtime                         0.012880   0.002039   6.316 5.12e-10 ***
+## mpaa_ratingNC-17               -0.546579   0.687767  -0.795 0.427083    
+## mpaa_ratingPG                  -0.638467   0.255746  -2.496 0.012801 *  
+## mpaa_ratingPG-13               -0.897958   0.260641  -3.445 0.000609 ***
+## mpaa_ratingR                   -0.594911   0.253327  -2.348 0.019167 *  
+## mpaa_ratingUnrated             -0.484593   0.294419  -1.646 0.100284    
+## dvd_rel_month                   0.023495   0.010707   2.194 0.028572 *  
+## best_dir_winyes                 0.425171   0.148370   2.866 0.004303 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.9031 on 621 degrees of freedom
+##   (9 observations deleted due to missingness)
+## Multiple R-squared:  0.3156, Adjusted R-squared:  0.2935 
+## F-statistic: 14.32 on 20 and 621 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>Since the p-value for the entire value is below 0.05, the model as a whole is significant. This also means that at least one of the predictors are significant, conditional on the other variables included in the model.</p>
 <hr />
+</div>
 </div>
 </div>
 <div id="part-5-prediction" class="section level2">

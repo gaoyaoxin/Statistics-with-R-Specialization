@@ -308,7 +308,84 @@ Since the p-value for two out of the three categories are high, there are statis
 
 Since we're interested in predicting the factors of significance that constitute a move with a high rating, we'll be using the p-value for model selection. These factors would be influential drivers in determining what the next "best" movie should consist of.
 
+We'll be using backward selection since we'll have to refit fewer models to identify the variables with significant p-values.
 
+#### 1. Starting with the complete model
+
+```{r}
+lm_full <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+              + thtr_rel_year + thtr_rel_month + thtr_rel_day + dvd_rel_year 
+              + dvd_rel_month + dvd_rel_day + best_actor_win + best_actress_win
+              + best_dir_win, data = movies)
+sum_full <- summary(lm_full)
+tail(sum_full$coefficients[,4])
+```
+
+#### 2. Drop the variable with the highest p-value and refit the model 
+
+Since majority of the above variables are categorical variables, elimination of a single variable would mean dropping multiple estimators in the above output. However, since `dvd_rel_year` has the highest p-value, we'll eliminate it and reconstruct the multiple linear regression model. 
+
+```{r}
+lm1 <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+          + dvd_rel_month + dvd_rel_day + best_actor_win + best_actress_win
+          + thtr_rel_year + thtr_rel_month + thtr_rel_day + best_dir_win, data = movies)
+sum_lm1 <- summary(lm1)
+tail(sum_lm1$coefficients[,4])
+```
+
+#### 3. Repeat until all remaining variables are significant
+
+The next highest p-value is that of `dvd_rel_day`, so we'll be eliminating it and re-fitting our model.
+
+```{r}
+lm2 <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+          + dvd_rel_month + best_actor_win + best_actress_win
+          + thtr_rel_year + thtr_rel_month + thtr_rel_day + best_dir_win, data = movies)
+
+tail(summary(lm2)$coefficients[,4])
+```
+
+Rather than displaying each summary, this project will be 
+
+```{r}
+# removing best_actor_win
+lm3 <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+          + dvd_rel_month + best_actress_win
+          + thtr_rel_year + thtr_rel_month + thtr_rel_day + best_dir_win, data = movies)
+tail(summary(lm3)$coefficients[,4])
+
+# removing best_actress_win
+lm4 <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+          + dvd_rel_month + thtr_rel_year + thtr_rel_month + thtr_rel_day 
+          + best_dir_win, data = movies)
+tail(summary(lm4)$coefficients[,4])
+
+# removing thtr_rel_day
+lm5 <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+          + dvd_rel_month + thtr_rel_year + thtr_rel_month 
+          + best_dir_win, data = movies)
+tail(summary(lm5)$coefficients[,4])
+
+# removing thtr_rel_year
+lm6 <- lm(imdb_rating ~ title_type + genre + runtime 
+          + mpaa_rating + studio + dvd_rel_month + thtr_rel_month 
+          + best_dir_win, data = movies)
+tail(summary(lm6)$coefficients[,4])
+
+# removing thtr_rel_month
+lm7 <- lm(imdb_rating ~ title_type + genre + runtime 
+          + mpaa_rating + studio + dvd_rel_month 
+          + best_dir_win, data = movies)
+tail(summary(lm7)$coefficients[,4])
+
+# removing studio
+lm8 <- lm(imdb_rating ~ title_type + genre + runtime 
+          + mpaa_rating + dvd_rel_month 
+          + best_dir_win, data = movies)
+summary(lm8)
+```
+
+Since the p-value for the entire value is below 0.05, the model as a whole is significant. This also means that at least one of the predictors are significant, conditional on the other variables included in the model.
 
 * * *
 
