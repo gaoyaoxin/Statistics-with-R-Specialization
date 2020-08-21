@@ -46,7 +46,6 @@ movies$studio %>%
 
 movies %>%
   summarise(max_year = max(thtr_rel_year), min_year = min(thtr_rel_year))
-
 ```
 
 Some of the film studios in the dataset are Indomina Media Inc., Warner Bros. Pictures, and Columbia Pictures. The majority of these studios are based in the US, and since the date ranges between the years 2014 and 1970. Most of these film studios, including ones by Sony Corporation, headquartered in Tokyo, are shot in California ^[[Wikipedia - Film industry](https://en.wikipedia.org/wiki/Film_industry)]. Furthermore, US-based film studios were inexperienced in film productions abroad and often sold the rights to their films to foreign parties ^[[Wikipedia - Cinema of the United States](https://en.wikipedia.org/wiki/Cinema_of_the_United_States)]. It is thereby safe to assume such studios targeted a US-based audience. However, it should be noted that ratings produced by rotten tomatoes and IMDb tend to be based on a global audience.
