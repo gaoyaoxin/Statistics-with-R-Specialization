@@ -102,26 +102,108 @@ This means that an influential driver for higher ratings is a large number of to
 
 ## Part 3: Exploratory data analysis
 
+### Conditions for Multiple Linear Regression (MLR)
+
+1. Linear Relationships between numerical variables and response variable
+
+```{r}
+lm_full <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+              + thtr_rel_year + thtr_rel_month + thtr_rel_day + dvd_rel_year 
+              + dvd_rel_month + dvd_rel_day + best_actor_win + best_actress_win
+              + best_dir_win, data = movies)
+
+plot(lm_full$residuals[complete.cases(movies)] ~ movies$runtime[complete.cases(movies)])
+  abline(0, 0, lty = 3) + 
+  title("Linear Relationships with runtime")
+
+plot(lm_full$residuals[complete.cases(movies)] ~ movies$thtr_rel_year[complete.cases(movies)])
+  abline(0, 0, lty = 3) + 
+  title("Linear Relationships with thtr_rel_year")
+  
+plot(lm_full$residuals[complete.cases(movies)] ~ movies$thtr_rel_month[complete.cases(movies)])
+  abline(0, 0, lty = 3) + 
+  title("Linear Relationships with thtr_rel_month")
+  
+plot(lm_full$residuals[complete.cases(movies)] ~ movies$thtr_rel_day[complete.cases(movies)])
+  abline(0, 0, lty = 3) + 
+  title("Linear Relationships with thtr_rel_day")
+  
+plot(lm_full$residuals[complete.cases(movies)] ~ movies$dvd_rel_year[complete.cases(movies)])
+  abline(0, 0, lty = 3) + 
+  title("Linear Relationships with dvd_rel_year")
+  
+plot(lm_full$residuals[complete.cases(movies)] ~ movies$dvd_rel_month[complete.cases(movies)])
+  abline(0, 0, lty = 3) + 
+  title("Linear Relationships with dvd_rel_month")
+  
+plot(lm_full$residuals[complete.cases(movies)] ~ movies$dvd_rel_day[complete.cases(movies)])
+  abline(0, 0, lty = 3) + 
+  title("Linear Relationships with dvd_rel_day")
+```
+
+There seems to be no relationships between the numerical variables and the response variable. There is a random scatter around 0 for every plot above. Hence, we can consider all the above variables in our analysis.
+
+2. Nearly Normal Residuals
+
+```{r}
+ggplot(lm_full, aes(x=.resid)) + 
+  geom_histogram(aes(y=..density..), color="black", fill="white") +
+  geom_density(alpha=0.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(lm_full$residuals)), col = 'red', lwd = 1, lty = 2) +
+  ggtitle("Residual Distribution")
+
+qqnorm(lm_full$residuals, main = "Residuals Q-Q Plot")
+qqline(lm_full$residuals)
+```
+
+The residuals are fairly symmetric, with only a slightly longer tail on the left, hence it would be appropriate to deem the the normal distribution of residuals condition met.
+
+3. Constant variability of residuals
+
+```{r}
+plot(lm_full$residuals ~ lm_full$fitted) + 
+  abline(0, 0, lty = 3) +
+  title("Residual vs Fitted Plot")
+
+plot(abs(lm_full$residuals) ~ lm_full$fitted) + 
+  abline(0, 0, lty = 3) +
+  title("Absolute residual vs Fitted Plot")
+```
+
+The absolute value of the residuals don't follow a triangle and the scatter is spread above and below the mean. It's safe to say homoscedasticity is present and the variability of the residuals is constant. 
+
+4. Independent residuals
+
+```{r}
+plot(lm_full$residuals)
+```
+
+There is no intrinsic ordering present in the residuals and no relation present in the graph above, hence we can say that the residuals are independent of each other.
+
+* * *
+
+## Part 4: Modeling
+
+### Variable Selection
+
 The explanatory variables of interest in our analysis are as follows:
 
-| title            | Title of movie                                                                                                                                                                            |
+| Column           | Description                                                                                                                                                                               |
 |------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `genre`            | Genre of movie (Action & Adventure, Comedy, Documentary, Drama, Horror, Mystery & Suspense, Other)                                                                                        |
-| `runtime`          | Runtime of movie (in minutes)                                                                                                                                                             |
-| `mpaa_rating`      | MPAA rating of the movie (G, PG, PG-13, R, Unrated)                                                                                                                                       |
-| `studio``           | Studio that produced the movie                                                                                                                                                            |
-| `thtr_rel_year`    | Year the movie is released in theaters                                                                                                                                                    |
-| `thtr_rel_month`   | Month the movie is released in theaters                                                                                                                                                   |
-| `thtr_rel_day`     | Day of the month the movie is released in theaters                                                                                                                                        |
-| `dvd_rel_year`     | Year the movie is released on DVD                                                                                                                                                         |
-| `dvd_rel_month`    | Month the movie is released on DVD                                                                                                                                                        |
-| `dvd_rel_day`      | Day of the month the movie is released on DVD                                                                                                                                             |
-| `best_pic_nom`     | Whether or not the movie was nominated for a best picture Oscar (no, yes)                                                                                                                 |
-| `best_pic_win`     | Whether or not the movie won a best picture Oscar (no, yes)                                                                                                                               |
-| `best_actor_win`   | Whether or not one of the main actors in the movie ever won an Oscar (no, yes) – note that this is not necessarily whether the actor won an Oscar for their role in the given movie       |
-| `best_actress_win` | Whether or not one of the main actresses in the movie ever won an Oscar (no, yes) – not that this is not necessarily whether the actresses won an Oscar for their role in the given movie |
-| `best_dir_win`     | Whether or not the director of the movie ever won an Oscar (no, yes) – not that this is not necessarily whether the director won an Oscar for the given movie                             |
-
+| title_type       | Type of movie (Documentary, Feature Film, TV Movie)                                                                                                                                       |
+| genre            | Genre of movie (Action & Adventure, Comedy, Documentary, Drama, Horror, Mystery & Suspense, Other)                                                                                        |
+| runtime          | Runtime of movie (in minutes)                                                                                                                                                             |
+| mpaa_rating      | MPAA rating of the movie (G, PG, PG-13, R, Unrated)                                                                                                                                       |
+| studio           | Studio that produced the movie                                                                                                                                                            |
+| thtr_rel_year    | Year the movie is released in theaters                                                                                                                                                    |
+| thtr_rel_month   | Month the movie is released in theaters                                                                                                                                                   |
+| thtr_rel_day     | Day of the month the movie is released in theaters                                                                                                                                        |
+| dvd_rel_year     | Year the movie is released on DVD                                                                                                                                                         |
+| dvd_rel_month    | Month the movie is released on DVD                                                                                                                                                        |
+| dvd_rel_day      | Day of the month the movie is released on DVD                                                                                                                                             |
+| best_actor_win   | Whether or not one of the main actors in the movie ever won an Oscar (no, yes) – note that this is not necessarily whether the actor won an Oscar for their role in the given movie       |
+| best_actress win | Whether or not one of the main actresses in the movie ever won an Oscar (no, yes) – not that this is not necessarily whether the actresses won an Oscar for their role in the given movie |
+| best_dir_win     | Whether or not the director of the movie ever won an Oscar (no, yes) – not that this is not necessarily whether the director won an Oscar for the given movie                             |                                                                                             |
 
 This analysis will not consider the following as explanatory variables. These correspond to so some form of ratings or ranking on Imdb, rotten tomatoes or BoxOfficeMojo:
 
@@ -131,6 +213,8 @@ This analysis will not consider the following as explanatory variables. These co
 * `audience_rating`: Categorical variable for audience rating on Rotten Tomatoes (Spilled, Upright)
 * `audience_score`: Audience score on Rotten Tomatoes
 * `top200_box`: Whether or not the movie is in the Top 200 Box Office list on BoxOfficeMojo (no, yes) 
+* `best_pic_nom`: Whether or not the movie was nominated for a best picture Oscar (no, yes)
+* `best_pic_win`: Whether or not the movie won a best picture Oscar (no, yes)
 
 Based on domain knowledge, ratings on other websites wouldn't be available prior to the release of the movie and such variables are likely to have high collinearity with the response variable which will result in incorrect estimators for other factors in this analysis. We can use the a pairplot to verify our assumption:
 
@@ -141,16 +225,89 @@ ggpairs(movies, columns = c('imdb_rating','imdb_num_votes','critics_score','audi
 
 As mentioned earlier, some numerical rating variables such as `audience_score` and `critics_score` on rotten tomatoes tend to result in a high correlation coefficient. Thus, they have a strong linear association with the response variable, which could result in biased estimators for other variables. Furthermore, these variables won't be available to us prior to the release of a movie.
 
+In terms of categorical variables, we can use ANOVA to verify if the variability in the response variable, `imbd_rating`, can be explained by each of the categorical rating variables. 
+
+In order to verify ANOVA conditions:
+
 ```{r}
-# categorical variables
-ggpairs(movies, columns = c('imdb_rating', 'critics_rating', 'audience_rating', 'top200_box'))
+movies %>%
+  group_by(critics_rating) %>%
+  summarize(n())
+
+movies %>%
+  group_by(audience_rating) %>%
+  summarize(n())
+
+movies %>%
+  group_by(top200_box) %>%
+  summarize(n())
 ```
 
-In terms of categorical variables, we can use anova to verify if the variability 
+1. Independence:
+    - within groups: Sampled observations in each group can be assumed independent of every other group. Furthermore, each customer can only give one rating. Each group has less than 10% of the population based on the results in the tables above.
+    - between groups: one must be vary of audience and critic ratings since a critic could rate a movie as an audience and vice versa. 
+  
+2. Approximately normality: distribution of each group must be nearly normal. 
 
-* * *
+```{r}
+movies %>%
+  group_by(critics_rating) %>%
+  ggplot(aes(x = imdb_rating, fill=critics_rating)) + 
+  geom_density(alpha=.2)
+```
+The distributions of the response variables for each `critics_rating` are nearly normal, even though there's a left skew.
+    
+```{r}
+movies %>%
+  group_by(audience_rating) %>%
+  ggplot(aes(x = imdb_rating, fill=audience_rating)) + 
+  geom_density(alpha=.2)
+```
 
-## Part 4: Modeling
+The distributions of the response variables for each `audience_rating` are nearly normal, even though there's a left skew.
+
+```{r}
+movies %>%
+  group_by(top200_box) %>%
+  ggplot(aes(x = imdb_rating, fill=top200_box)) + 
+  geom_density(alpha=.2)
+```
+
+The distributions of the response variables for each `top200_box` are nearly normal, even though there's a left skew. 
+
+3. Equal Variance: Groups should have roughly equal variability. 
+
+```{r}
+movies %>%
+  group_by(critics_rating) %>%
+  ggplot(aes(x = imdb_rating, fill=critics_rating)) + 
+  geom_boxplot(alpha=.2)
+
+movies %>%
+  group_by(audience_rating) %>%
+  ggplot(aes(x = imdb_rating, fill=audience_rating)) + 
+  geom_boxplot(alpha=.2)
+
+movies %>%
+  group_by(top200_box) %>%
+  ggplot(aes(x = imdb_rating, fill=top200_box)) + 
+  geom_boxplot(alpha=.2)
+```
+
+Based on the boxplots above, the variability between groups is roughly equal.
+
+We can hence run ANOVA:
+
+```{r}
+cat_aov <- aov(imdb_rating ~ critics_rating + audience_rating + top200_box, data = movies)
+summary(cat_aov)
+```
+
+Since the p-value for two out of the three categories are high, there are statistically significant differences between group means as determined. These variables would thus result in biased estimators. Furthermore, since they're not known prior to the release of a movie, it wouldn't contribute to the analysis.
+
+### Model Selection
+
+Since we're interested in predicting the factors of significance that constitute a move with a high rating, we'll be using the p-value for model selection. These factors would be influential drivers in determining what the next "best" movie should consist of.
 
 
 
