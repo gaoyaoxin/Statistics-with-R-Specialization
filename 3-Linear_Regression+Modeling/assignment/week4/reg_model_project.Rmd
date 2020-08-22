@@ -16,6 +16,7 @@ library(ggplot2)
 library(dplyr)
 library(statsr)
 library(GGally)
+library(knitr)
 ```
 
 ### Load data
@@ -101,12 +102,261 @@ This means that an influential driver for higher ratings is a large number of to
 
 ## Part 3: Exploratory data analysis
 
-### Conditions for Multiple Linear Regression (MLR)
+### Collinearity and Parsimony
 
-1. Linear Relationships between numerical variables and response variable
+Two predictor variables are said to be collinear when they are correlated with each other. In order to test for collinearity, the $R^{2}$ coefficient of correlation can be compared between any two numerical variables (or categorical, in the case of day, month or year) we select for this analysis. Inclusion of collinear predictors are likely to bias model estimators and complicate the model estimation process.
+
+```{r warning=FALSE, message=FALSE}
+ggpairs(movies, columns = c('runtime', 'thtr_rel_year', 'thtr_rel_month', 
+                            'thtr_rel_day', 'dvd_rel_year', 'dvd_rel_month', 'dvd_rel_day'))
+```
+
+Since none of the correlation coefficients are high, a model comprising of the above numerical variables can be deemed as parsimonious, since it would contain the fewest assumptions.
+
+### Categorical Variables
+
+We can draw a boxplot for each categorical variable, of interest, to capture the distribution of the with respect to the response variable, i.e., `imdb_rating`. Furthermore, we'll also use a barplot to show comparisons among the count of each category.
+
+#### title_type
 
 ```{r}
-lm_full <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+movies %>%
+    group_by(title_type) %>%
+    ggplot(aes(x = imdb_rating, fill = title_type)) + 
+    geom_boxplot(alpha=.2) +
+    ggtitle("Boxplot showing the variability of imdb_rating for each category of title_type")
+```
+
+Based on the boxplot above, the ratings are most variable for the Documentary category and least variable for the TV Movie category.
+
+```{r}
+ggplot(data = movies, aes(x = title_type)) + 
+  geom_bar() +
+  ggtitle("Barplot showing the categories of title_type")
+
+movies %>%
+  group_by(title_type) %>%
+  summarize(n())
+```
+
+The majority of the films in the dataset are of the type "Feature Film." Furthermore, "TV Movie" is a tiny segment of the dataset comprising of only 5 movies, while there are only 55 Documentaries. Additionally, since this analysis is meant for Paramount pictures, a company that specializes in making movies, we'll only be using movies of the Feature Film type.
+
+```{r}
+# subsetting to include only Feature Film
+movies <- movies[movies$title_type == 'Feature Film', ]
+```
+
+#### genre
+
+```{r}
+movies %>%
+    group_by(genre) %>%
+    ggplot(aes(x = imdb_rating, fill = genre)) + 
+    geom_boxplot(alpha=.2) +
+    ggtitle("Boxplot showing the variability of imdb_rating for each category of genre")
+```
+
+The variability isn't constant among the different genres as displayed in the boxplot above. The variability is the highest for the "Action & Adventure" genre and the lowest for the "Drama" genre.
+
+```{r}
+ggplot(data = movies, aes(x = genre)) + 
+  geom_bar() +
+  ggtitle("Barplot showing the categories of genre") + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+movies %>%
+  group_by(genre) %>%
+  summarize(n())
+```
+
+Since we removed the "Documentary" title type in the previous section, we'll remove all the titles from the "Documentary" genre. It would be counter-intuitive to remove all Documentaries but still have a segment of films that are of the genre "Documentary". Furthermore, there are only 3 documentaries in this dataset which further supports our decision of removing this genre.
+
+```{r}
+movies <- movies[movies$genre != "Documentary", ]
+```
+
+#### mpaa_rating
+
+```{r}
+movies %>%
+    group_by(mpaa_rating) %>%
+    ggplot(aes(x = imdb_rating, fill = mpaa_rating)) + 
+    geom_boxplot(alpha=.2) +
+    ggtitle("Boxplot showing the variability of imdb_rating for each category of mpaa_rating")
+```
+
+The variability of the imdb_rating of the different mpaa_rating categories seems almost consistent for R, Unrated, and PG. The lowest variability is in the NC-17 rating.
+
+```{r}
+ggplot(data = movies, aes(x = mpaa_rating)) + 
+  geom_bar() +
+  ggtitle("Barplot showing the categories of mpaa_rating")
+
+movies %>%
+  group_by(mpaa_rating) %>%
+  summarize(n())
+```
+
+There are only 2 movies from the NC-17 rated category in this dataset. However, since we're interested in how movies of all ratings perform, we won't be removing movies from this category.
+
+#### thtr_rel_year
+
+```{r}
+ggplot(data = movies, aes(x = thtr_rel_year)) + 
+  geom_bar() +
+  ggtitle("Barplot showing the categories of thtr_rel_year")
+```
+
+As mentioned earlier, the movies aren't not stratified by thtr_rel_year. Each thtr_rel_year contains a maximum of 30 movies and a minimum of 2.
+
+#### thtr_rel_month
+
+```{r}
+# converting thtr_rel_month to a factor
+movies$thtr_rel_month <- as.factor(movies$thtr_rel_month)
+
+movies %>%
+    group_by(thtr_rel_month) %>%
+    ggplot(aes(x = imdb_rating, fill = thtr_rel_month)) + 
+    geom_boxplot(alpha=.2) +
+    ggtitle("Boxplot showing the variability of imdb_rating for each category of thtr_rel_month")
+```
+The variability imdb_rating of movies among months looks consistent for most of the months as displayed in the boxplot above.
+
+```{r}
+ggplot(data = movies, aes(x = thtr_rel_month)) + 
+  geom_bar() +
+  ggtitle("Barplot showing the categories of thtr_rel_month")
+
+movies %>%
+  group_by(thtr_rel_month) %>%
+  summarize(n())
+
+# converting thtr_rel_month to a numerical variable
+movies$thtr_rel_month <- as.numeric(movies$thtr_rel_month)
+```
+
+The are a maximum number of 69 movies in each month and a minimum of 29.
+
+#### dvd_rel_year
+
+```{r}
+ggplot(data = movies, aes(x = dvd_rel_year)) + 
+  geom_bar() +
+  ggtitle("Barplot showing the categories of dvd_rel_year")
+```
+
+The dvd_rel_year has some years where no movies were realeased. This makes sense as DVDs were prevelant during the early and mid 2000s after which movies began moving to online mediums such as Netflix and Hulu.
+
+
+#### dvd_rel_month
+
+```{r}
+# converting dvd_rel_month to a factor
+movies$dvd_rel_month <- as.factor(movies$dvd_rel_month)
+
+movies %>%
+    group_by(dvd_rel_month) %>%
+    ggplot(aes(x = imdb_rating, fill = dvd_rel_month)) + 
+    geom_boxplot(alpha=.2) +
+    ggtitle("Boxplot showing the variability of imdb_rating for each category of dvd_rel_month")
+```
+
+The variability imdb_rating of movies among months looks consistent for most of the months as displayed in the boxplot above.
+
+```{r}
+ggplot(data = movies, aes(x = dvd_rel_month)) + 
+  geom_bar() +
+  ggtitle("Barplot showing the categories of dvd_rel_month")
+
+movies %>%
+  group_by(dvd_rel_month) %>%
+  summarize(n())
+
+# converting dvd_rel_month to a numerical variable
+movies$dvd_rel_month <- as.numeric(movies$dvd_rel_month)
+```
+
+The are a maximum number of 68 movies in each month and a minimum of 6 for dvd releases.
+
+#### best_actor_win
+
+```{r}
+movies %>%
+    group_by(best_actor_win) %>%
+    ggplot(aes(x = imdb_rating, fill = best_actor_win)) + 
+    geom_boxplot(alpha=.2) +
+    ggtitle("Boxplot showing the variability of imdb_rating for each category of best_actor_win")
+```
+
+The variability for imdb_rating is consistent between the two categories.
+
+```{r}
+ggplot(data = movies, aes(x = best_actor_win)) + 
+  geom_bar() +
+  ggtitle("Barplot showing the categories of best_actor_win")
+
+movies %>%
+  group_by(best_actor_win) %>%
+  summarize(n())
+```
+
+There are significantly more movies with a single lead actor that hasn't won an oscar than those movies with a single lead actor that has won an oscar.
+
+#### best_actress_win
+
+```{r}
+movies %>%
+    group_by(best_actress_win) %>%
+    ggplot(aes(x = imdb_rating, fill = best_actress_win)) + 
+    geom_boxplot(alpha=.2) +
+    ggtitle("Boxplot showing the variability of imdb_rating for each category of best_actress_win")
+```
+
+The variability for imdb_rating is consistent between the two categories.
+
+```{r}
+ggplot(data = movies, aes(x = best_actress_win)) + 
+  geom_bar() +
+  ggtitle("Barplot showing the categories of best_actress_win")
+
+movies %>%
+  group_by(best_actress_win) %>%
+  summarize(n())
+```
+
+There are significantly more movies with a single lead actress that hasn't won an oscar than those movies with a single lead actress that has won an oscar.
+
+#### best_dir_win
+
+```{r}
+movies %>%
+    group_by(best_dir_win) %>%
+    ggplot(aes(x = imdb_rating, fill = best_dir_win)) + 
+    geom_boxplot(alpha=.2) +
+    ggtitle("Boxplot showing the variability of imdb_rating for each category of best_dir_win")
+```
+
+The variability for imdb_rating is consistent between the two categories. But movies with a best_dir_win being yes seem to have a higher rating.
+
+```{r}
+ggplot(data = movies, aes(x = best_dir_win)) + 
+  geom_bar() +
+  ggtitle("Barplot showing the categories of best_dir_win")
+
+movies %>%
+  group_by(best_dir_win) %>%
+  summarize(n())
+```
+
+There are significantly more movies with a director that hasn't won an oscar than those movies with a director that has won an oscar.
+
+### Conditions for Multiple Linear Regression (MLR)
+
+### 1. Linear Relationships between numerical variables and response variable
+
+```{r}
+lm_full <- lm(imdb_rating ~ genre + runtime + mpaa_rating + studio
               + thtr_rel_year + thtr_rel_month + thtr_rel_day + dvd_rel_year 
               + dvd_rel_month + dvd_rel_day + best_actor_win + best_actress_win
               + best_dir_win, data = movies)
@@ -114,35 +364,11 @@ lm_full <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
 plot(lm_full$residuals[complete.cases(movies)] ~ movies$runtime[complete.cases(movies)])
   abline(0, 0, lty = 3) + 
   title("Linear Relationships with runtime")
-
-plot(lm_full$residuals[complete.cases(movies)] ~ movies$thtr_rel_year[complete.cases(movies)])
-  abline(0, 0, lty = 3) + 
-  title("Linear Relationships with thtr_rel_year")
-  
-plot(lm_full$residuals[complete.cases(movies)] ~ movies$thtr_rel_month[complete.cases(movies)])
-  abline(0, 0, lty = 3) + 
-  title("Linear Relationships with thtr_rel_month")
-  
-plot(lm_full$residuals[complete.cases(movies)] ~ movies$thtr_rel_day[complete.cases(movies)])
-  abline(0, 0, lty = 3) + 
-  title("Linear Relationships with thtr_rel_day")
-  
-plot(lm_full$residuals[complete.cases(movies)] ~ movies$dvd_rel_year[complete.cases(movies)])
-  abline(0, 0, lty = 3) + 
-  title("Linear Relationships with dvd_rel_year")
-  
-plot(lm_full$residuals[complete.cases(movies)] ~ movies$dvd_rel_month[complete.cases(movies)])
-  abline(0, 0, lty = 3) + 
-  title("Linear Relationships with dvd_rel_month")
-  
-plot(lm_full$residuals[complete.cases(movies)] ~ movies$dvd_rel_day[complete.cases(movies)])
-  abline(0, 0, lty = 3) + 
-  title("Linear Relationships with dvd_rel_day")
 ```
 
-There seems to be no relationships between the numerical variables and the response variable. There is a random scatter around 0 for every plot above. Hence, we can consider all the above variables in our analysis.
+There seems to be no relationships between the numerical variable, `runtime`, and the response variable, `imdb_rating`. There is a random scatter around 0 for every plot above. Hence, we can consider `runtime` in our analysis.
 
-2. Nearly Normal Residuals
+#### 2. Nearly Normal Residuals
 
 ```{r}
 ggplot(lm_full, aes(x=.resid)) + 
@@ -155,9 +381,9 @@ qqnorm(lm_full$residuals, main = "Residuals Q-Q Plot")
 qqline(lm_full$residuals)
 ```
 
-The residuals are fairly symmetric, with only a slightly longer tail on the left, hence it would be appropriate to deem the the normal distribution of residuals condition met.
+The residuals are fairly symmetric, with only a slightly longer tail on the left, hence it would be appropriate to deem the normal distribution of residuals condition met.
 
-3. Constant variability of residuals
+#### 3. Constant variability of residuals
 
 ```{r}
 plot(lm_full$residuals ~ lm_full$fitted) + 
@@ -171,7 +397,7 @@ plot(abs(lm_full$residuals) ~ lm_full$fitted) +
 
 The absolute value of the residuals don't follow a triangle and the scatter is spread above and below the mean. It's safe to say homoscedasticity is present and the variability of the residuals is constant. 
 
-4. Independent residuals
+#### 4. Independent residuals
 
 ```{r}
 plot(lm_full$residuals)
@@ -242,11 +468,12 @@ movies %>%
   summarize(n())
 ```
 
-1. Independence:
+#### 1. Independence:
+
     - within groups: Sampled observations in each group can be assumed independent of every other group. Furthermore, each customer can only give one rating. Each group has less than 10% of the population based on the results in the tables above.
     - between groups: one must be vary of audience and critic ratings since a critic could rate a movie as an audience and vice versa. 
   
-2. Approximately normality: distribution of each group must be nearly normal. 
+#### 2. Approximately normality: distribution of each group must be nearly normal. 
 
 ```{r}
 movies %>%
@@ -274,7 +501,7 @@ movies %>%
 
 The distributions of the response variables for each `top200_box` are nearly normal, even though there's a left skew. 
 
-3. Equal Variance: Groups should have roughly equal variability. 
+#### 3. Equal Variance: Groups should have roughly equal variability. 
 
 ```{r}
 movies %>%
@@ -313,7 +540,7 @@ We'll be using backward selection since we'll have to refit fewer models to iden
 #### 1. Starting with the complete model
 
 ```{r}
-lm_full <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+lm_full <- lm(imdb_rating ~ genre + runtime + mpaa_rating + studio
               + thtr_rel_year + thtr_rel_month + thtr_rel_day + dvd_rel_year 
               + dvd_rel_month + dvd_rel_day + best_actor_win + best_actress_win
               + best_dir_win, data = movies)
@@ -326,66 +553,143 @@ tail(sum_full$coefficients[,4])
 Since majority of the above variables are categorical variables, elimination of a single variable would mean dropping multiple estimators in the above output. However, since `dvd_rel_year` has the highest p-value, we'll eliminate it and reconstruct the multiple linear regression model. 
 
 ```{r}
-lm1 <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+lm1 <- lm(imdb_rating ~ genre + runtime + mpaa_rating + studio
           + dvd_rel_month + dvd_rel_day + best_actor_win + best_actress_win
           + thtr_rel_year + thtr_rel_month + thtr_rel_day + best_dir_win, data = movies)
 sum_lm1 <- summary(lm1)
-tail(sum_lm1$coefficients[,4])
+tail(sum_lm1$coefficients[,4], 10)
 ```
 
 #### 3. Repeat until all remaining variables are significant
 
-The next highest p-value is that of `dvd_rel_day`, so we'll be eliminating it and re-fitting our model.
+The next highest p-value is that of `best_actress_winyes`, so we'll be eliminating it and re-fitting our model.
 
 ```{r}
-lm2 <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
-          + dvd_rel_month + best_actor_win + best_actress_win
+lm2 <- lm(imdb_rating ~ genre + runtime + mpaa_rating + studio
+          + dvd_rel_month + dvd_rel_day +  best_actor_win
           + thtr_rel_year + thtr_rel_month + thtr_rel_day + best_dir_win, data = movies)
 
-tail(summary(lm2)$coefficients[,4])
+tail(summary(lm2)$coefficients[,4], 10)
 ```
 
-Rather than displaying each summary, this project will be 
+Rather than displaying each summary, this project will be running through each iteration in the code below.
 
 ```{r}
 # removing best_actor_win
-lm3 <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
-          + dvd_rel_month + best_actress_win
-          + thtr_rel_year + thtr_rel_month + thtr_rel_day + best_dir_win, data = movies)
+lm3 <- lm(imdb_rating ~ genre + runtime + mpaa_rating + studio
+          + dvd_rel_month + dvd_rel_day + thtr_rel_year + thtr_rel_month
+          + thtr_rel_day + best_dir_win, data = movies)
 tail(summary(lm3)$coefficients[,4])
 
-# removing best_actress_win
-lm4 <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+# removing dvd_rel_day
+lm4 <- lm(imdb_rating ~ genre + runtime + mpaa_rating + studio
           + dvd_rel_month + thtr_rel_year + thtr_rel_month + thtr_rel_day 
           + best_dir_win, data = movies)
 tail(summary(lm4)$coefficients[,4])
 
 # removing thtr_rel_day
-lm5 <- lm(imdb_rating ~ title_type + genre + runtime + mpaa_rating + studio
+lm5 <- lm(imdb_rating ~ genre + runtime + mpaa_rating + studio
           + dvd_rel_month + thtr_rel_year + thtr_rel_month 
           + best_dir_win, data = movies)
 tail(summary(lm5)$coefficients[,4])
 
 # removing thtr_rel_year
-lm6 <- lm(imdb_rating ~ title_type + genre + runtime 
+lm6 <- lm(imdb_rating ~ genre + runtime 
           + mpaa_rating + studio + dvd_rel_month + thtr_rel_month 
           + best_dir_win, data = movies)
 tail(summary(lm6)$coefficients[,4])
 
 # removing thtr_rel_month
-lm7 <- lm(imdb_rating ~ title_type + genre + runtime 
+lm7 <- lm(imdb_rating ~ genre + runtime 
           + mpaa_rating + studio + dvd_rel_month 
           + best_dir_win, data = movies)
 tail(summary(lm7)$coefficients[,4])
 
 # removing studio
-lm8 <- lm(imdb_rating ~ title_type + genre + runtime 
+lm8 <- lm(imdb_rating ~ genre + runtime 
           + mpaa_rating + dvd_rel_month 
           + best_dir_win, data = movies)
 summary(lm8)
 ```
 
-Since the p-value for the entire value is below 0.05, the model as a whole is significant. This also means that at least one of the predictors are significant, conditional on the other variables included in the model.
+Since the p-value for the entire value is below 0.05, the model as a whole is significant. This also means that at least one of the predictors are significant (or not 0), conditional on the other variables included in the model. 
+
+### Model Diagnostics
+
+#### 1. Linear Relationships between numerical variables and response variable
+
+```{r}
+plot(lm8$residuals[complete.cases(movies)] ~ movies$runtime[complete.cases(movies)])
+  abline(0, 0, lty = 3) + 
+  title("Linear Relationships with runtime")
+```
+
+There seems to be no relationships between the numerical variable, `runtime` and the response variable. There is a random scatter around 0 for every plot above with the exception of one leverage point (above 250). Hence there is a linear relationship between `runtime` and `imdb_rating`.
+
+#### 2. Nearly Normal Residuals
+
+```{r}
+ggplot(lm8, aes(x=.resid)) + 
+  geom_histogram(aes(y=..density..), color="black", fill="white") +
+  geom_density(alpha=0.2, fill="#FF6666") +
+  geom_vline(aes(xintercept=mean(lm8$residuals)), col = 'red', lwd = 1, lty = 2) +
+  ggtitle("Residual Distribution")
+
+qqnorm(lm8$residuals, main = "Residuals Q-Q Plot")
+qqline(lm8$residuals)
+```
+
+The residuals are reasonably symmetric, with only a slightly longer tail on the left. The q-q plot also shows that a significant number of residuals lie on the standard normal line. Hence it would be appropriate to consider the normality condition to be met. 
+
+#### 3. Constant variability of residuals
+
+```{r}
+plot(lm8$residuals ~ lm8$fitted) + 
+  abline(0, 0, lty = 3) +
+  title("Residual vs Fitted Plot")
+
+plot(abs(lm8$residuals) ~ lm8$fitted) + 
+  abline(0, 0, lty = 3) +
+  title("Absolute residual vs Fitted Plot")
+```
+
+Since most of the ratings are below 9, the scatter is random (above and below the zero residual line) around a score of 6. The absolute value of the residuals doesn't follow a triangle, and the scatter is spread above and below the mean. It's safe to say homoscedasticity is present, and the variability of the residuals is constant. 
+
+#### 4. Independent residuals
+
+```{r}
+plot(lm8$residuals)
+```
+
+There is no intrinsic ordering present in the residuals and no relation present in the graph above. Hence we can say that the residuals are independent of each other.
+
+### Interpretation of model coefficients
+
+```{r}
+kable(summary(lm8)$coefficients)
+```
+
+#### genre
+
+All else held constant, the model predicts that:
+   - the "Animation" genre gets a rating which is 0.25 points lower than all other genres, on average.
+   - the "Art House & International" genre gets a rating which is 0.7 points higher than all other genres, on average.
+   - the "Comedy" genre gets a rating which is 0.05 points lower than all other genres, on average.
+   - the "Drama" genre gets a rating which is 0.61 points higher than all other genres, on average.
+   - the "Horror" genre gets a rating which is 0.09 points lower than all other genres, on average.
+   - the "Musical & Performing Arts" genre gets a rating which is 0.95 points higher than all other genres, on average.
+   - the "Mystery & Suspense" genre gets a rating which is 0.39 points higher than all other genres, on average.
+   - the "Other" genre gets a rating which is 0.71 points higher than all other genres, on average.
+   - the "Science Fiction & Fantasy" genre gets a rating which is 0.001 points higher than all other genres, on average.
+   
+#### runtime
+
+The model predicts, given that all else is held constant, for each 1-minute increase in runtime, the imdb_rating increases by 0.01 points. Even though the predictor is significant according to its p-value, it doesn't necessarily mean that a longer movie is better. The model also predicts that every single minute only contributes to a minor increase in rating. Furthermore, in reality, a longer or shorter movie doesn't result in a popular film, it's how "engaging" or "engrossing" a film is, a highly subjective variable to measure. Moreover, it's difficult to determine the "engaging-ness" of a title prior to its release.
+
+
+#### mpaa_rating
+
+All else held constant, 
 
 * * *
 
@@ -396,5 +700,7 @@ Since the p-value for the entire value is below 0.05, the model as a whole is si
 * * *
 
 ## Part 6: Conclusion
+
+* Although winning an Oscar is a prestigious milestone for any film, a movie that hasn't won an Oscar isn't necessarily poor. Furthermore, Oscars have been criticized as being financially-driven rather than talent-driven. ^[[New York TImes: There's more to winning an oscar than meets the eye](https://www.nytimes.com/2015/01/29/arts/international/theres-more-to-winning-an-oscar-than-meets-the-eye.html)]
 
 ## References
