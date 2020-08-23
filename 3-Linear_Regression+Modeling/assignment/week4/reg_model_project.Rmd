@@ -127,7 +127,7 @@ movies %>%
     ggtitle("Boxplot showing the variability of imdb_rating for each category of title_type")
 ```
 
-Based on the boxplot above, the ratings are most variable for the Documentary category and least variable for the TV Movie category.
+Based on the boxplot above, the ratings are least variable for the Documentary category and most variable for the TV Movie category.
 
 ```{r}
 ggplot(data = movies, aes(x = title_type)) + 
@@ -470,8 +470,8 @@ movies %>%
 
 #### 1. Independence:
 
-    - within groups: Sampled observations in each group can be assumed independent of every other group. Furthermore, each customer can only give one rating. Each group has less than 10% of the population based on the results in the tables above.
-    - between groups: one must be vary of audience and critic ratings since a critic could rate a movie as an audience and vice versa. 
+- within groups: Sampled observations in each group can be assumed independent of every other group. Furthermore, each customer can only give one rating. Each group has less than 10% of the population based on the results in the tables above.
+- between groups: one must be vary of audience and critic ratings since a critic could rate a movie as an audience and vice versa. 
   
 #### 2. Approximately normality: distribution of each group must be nearly normal. 
 
@@ -665,42 +665,92 @@ There is no intrinsic ordering present in the residuals and no relation present 
 
 ### Interpretation of model coefficients
 
-```{r}
+```{r echo=FALSE}
 kable(summary(lm8)$coefficients)
 ```
 
 #### genre
 
 All else held constant, the model predicts that:
-   - the "Animation" genre gets a rating which is 0.25 points lower than all other genres, on average.
-   - the "Art House & International" genre gets a rating which is 0.7 points higher than all other genres, on average.
-   - the "Comedy" genre gets a rating which is 0.05 points lower than all other genres, on average.
-   - the "Drama" genre gets a rating which is 0.61 points higher than all other genres, on average.
-   - the "Horror" genre gets a rating which is 0.09 points lower than all other genres, on average.
-   - the "Musical & Performing Arts" genre gets a rating which is 0.95 points higher than all other genres, on average.
-   - the "Mystery & Suspense" genre gets a rating which is 0.39 points higher than all other genres, on average.
-   - the "Other" genre gets a rating which is 0.71 points higher than all other genres, on average.
-   - the "Science Fiction & Fantasy" genre gets a rating which is 0.001 points higher than all other genres, on average.
+
+   - the "Animation" genre gets a rating which is 0.25 points lower than the reference level, on average.
+   - the "Art House & International" genre gets a rating which is 0.7 points higher than the reference level, on average.
+   - the "Comedy" genre gets a rating which is 0.05 points lower than the reference level, on average.
+   - the "Drama" genre gets a rating which is 0.61 points higher than the reference level, on average.
+   - the "Horror" genre gets a rating which is 0.09 points lower than the reference level, on average.
+   - the "Musical & Performing Arts" genre gets a rating which is 0.95 points higher than the reference level, on average.
+   - the "Mystery & Suspense" genre gets a rating which is 0.39 points higher than the reference level, on average.
+   - the "Other" genre gets a rating which is 0.71 points higher than the reference level, on average.
+   - the "Science Fiction & Fantasy" genre gets a rating which is 0.001 points higher than the reference level, on average.
+   
+Now that we know how each genre scores higher or lower than its reference level, an extension of this analysis could identify whether specific genres tend to score significantly more than other genres. In other words, we can test whether the genre is associated with an IMDb rating using a chi-square independence test.
    
 #### runtime
 
-The model predicts, given that all else is held constant, for each 1-minute increase in runtime, the imdb_rating increases by 0.01 points. Even though the predictor is significant according to its p-value, it doesn't necessarily mean that a longer movie is better. The model also predicts that every single minute only contributes to a minor increase in rating. Furthermore, in reality, a longer or shorter movie doesn't result in a popular film, it's how "engaging" or "engrossing" a film is, a highly subjective variable to measure. Moreover, it's difficult to determine the "engaging-ness" of a title prior to its release.
+The model predicts, given that all else is held constant, for each 1-minute increase in runtime, the imdb_rating increases by 0.01 points.
 
 
 #### mpaa_rating
 
-All else held constant, 
+All else held constant, the model predicts that a movie with a: 
+
+   - "NC-17" rating scores 0.63 points lower than the reference level, on average.
+   - "PG" rating scores 0.76 points lower than the reference level, on average.
+   - "R" rating scores 0.71 points lowest than the reference level, on average.
+   - "Unrated" rating scores 0.41 points lower than the reference level, on average.
+
+Since the reference level, in this case, is a movie with a "G" rating, it can be said that G rated movies tend to score better on average compared to all other ratings. However, to verify if these results are significant, a chi-square independent test can be conducted along with a Bonferroni correction to check whether any specific rating tends to score statistically better than the other.
+
+#### dvd_rel_month
+
+The model predicts that with each additional month in DVD release month, the rating increase by 0.02 on average, given all else is held constant. 
+
+#### Intercept or Reference level
+
+The intercept in this model represents a film of the "Action & Adventure" genre, with a runtime of 0 minutes, a mpaa_rating of "G," a dvd_rel_month of 0, and the director hasn't won an Oscar. A movie with these parameters would score a rating of 4.89. However, given a runtime of 0 minutes and a DVD release month of 0, the intercept is meaningless in this case and only serves to adjust the line's height. Since the reference level, in this case, is a movie with a "G" rating, it can be said that G rated movies tend to score better on average compared to all other ratings. However, to verify if these results are significant, a chi-square independent test can be conducted along with a Bonferroni correction to check whether any specific rating tends to score statistically better than the other.
 
 * * *
 
 ## Part 5: Prediction
 
+In order to test our model, this project will use a movie from 2016 and verify whether the model predicts the correct imdb_rating. The movie we'll use is "Deadpool", a superhero film based on a Marvel Comics character. The movie was produced by a conglomerate of production studios, namely:
 
+  - 20th Century Fox
+  - Marvel Entertainment
+  - Kinberg Genre
+  - The Donners' Company
+  - TSG Entertainment
+  
+First, we'll create a dataframe for this movie. Since the movie consists of three genres, we'll be creating two dataframes, one for "Action & Adventure" and the other for "Comedy". The data is obtained from the IMDb page for this movie. ^[[Deadpool (2016) - IMDb](https://www.imdb.com/title/tt1431045/)]
+
+```{r}
+deadpool <- data.frame("genre" = c("Action & Adventure", "Comedy"), 
+                       "runtime" = c(108,108), 
+                       "mpaa_rating" = c("R","R"),
+                       "dvd_rel_month" = c(5, 5),
+                       "best_dir_win" = c("no", "no"))
+deadpool
+```
+
+Using the predict function in R:
+
+```{r}
+deadpool_imdb_pred <- predict(lm8, newdata = deadpool, interval = "confidence")
+deadpool_imdb_pred
+```
+
+The imdb_ratings in this case are 6.0 for both genres. In formal terms, we are 95% confident that the movie "Deadpool" scored an IMDb rating between 4 and 8. The actual imdb_rating for Deadpool is 8.0 as of August 2020. This means the model was close to the actual score. It should be noted that the margin of error in this case is also very large.
 
 * * *
 
 ## Part 6: Conclusion
 
+The $R^{2}$ of the model is 0.253 and the $R^{2}_{adj}$ is 0.231. This means that the model doesn't perform well while predicting `imdb_rating` values. Based on the p-values, the model as a whole is significant and individual predictors in the model are also significant. However, significant in this case only refers to the fact that at least one of the predictors are non-zero and not to the accuracy of the model's predictions.
+
+Some of the reasons why the model didn't perform well can be listed as:
+
+* Even though the predictor is significant according to its p-value, it doesn't necessarily mean that a longer movie is better. The model also predicts that every single minute only contributes to a minor increase in rating. Furthermore, in reality, a longer or shorter movie doesn't result in a popular film, it's how "engaging" or "engrossing" a film is, a highly subjective variable to measure. Moreover, it's difficult to determine the "engaging-ness" of a title prior to its release.
+* Based on the coefficient for the DVD release year parameter, the DVD month doesn't significantly impact the ratings as the maximum month, in this case, would be 12, i.e., December. Additionally, it wouldn't counter-intuitive that movies with DVD releases in certain months tend to score better than those released in others.
 * Although winning an Oscar is a prestigious milestone for any film, a movie that hasn't won an Oscar isn't necessarily poor. Furthermore, Oscars have been criticized as being financially-driven rather than talent-driven. ^[[New York TImes: There's more to winning an oscar than meets the eye](https://www.nytimes.com/2015/01/29/arts/international/theres-more-to-winning-an-oscar-than-meets-the-eye.html)]
 
 ## References
