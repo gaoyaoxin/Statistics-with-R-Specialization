@@ -23,5 +23,5 @@
 ## Week 4
 
 - [Final Project](assignment/week4)
-- [Final Project (pdf)]()
+- [Final Project (pdf)](assignment/week4/reg_model_project.pdf)
 - [Final Project (Rpubs)]()
