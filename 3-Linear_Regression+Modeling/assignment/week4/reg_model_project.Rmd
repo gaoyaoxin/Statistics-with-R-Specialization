@@ -739,7 +739,7 @@ deadpool_imdb_pred <- predict(lm8, newdata = deadpool, interval = "confidence")
 deadpool_imdb_pred
 ```
 
-The imdb_ratings in this case are 6.0 for both genres. In formal terms, we are 95% confident that the movie "Deadpool" scored an IMDb rating between 4 and 8. The actual imdb_rating for Deadpool is 8.0 as of August 2020. This means the model was close to the actual score. It should be noted that the margin of error in this case is also very large.
+The imdb_ratings in this case are 6.0 for both genres. In formal terms, we are 95% confident that the movie "Deadpool" scored an IMDb rating between 5.8 and 6.3. The actual imdb_rating for Deadpool is 8.0 as of August 2020. This means the model was close to the actual score. It should be noted that the margin of error in this case is also very large.
 
 * * *
 
