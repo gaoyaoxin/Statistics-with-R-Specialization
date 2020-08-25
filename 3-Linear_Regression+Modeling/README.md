@@ -24,4 +24,4 @@
 
 - [Final Project](assignment/week4)
 - [Final Project (pdf)](assignment/week4/reg_model_project.pdf)
-- [Final Project (Rpubs)]()
+- [Final Project (Rpubs)](https://rpubs.com/jacobjohn2016/652432)
